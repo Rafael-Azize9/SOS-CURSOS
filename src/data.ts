@@ -297,7 +297,7 @@ export function categoryCounts(): Record<string, number> {
   return counts;
 }
 
-export const INSTAGRAM_URL = 'https://www.instagram.com/cursos.sos?igsh=dWF3c3R0NmEwMGc2';
+export const INSTAGRAM_URL = 'https://www.instagram.com/cursos.sos';
 
 export const WA_MESSAGE_DEFAULT = 'Olá! Vim pelo site da S.O.S Cursos.';
 export const WA_MESSAGE_START = 'Olá! Quero começar um curso na S.O.S Cursos.';
@@ -383,6 +383,6 @@ export const WHY_CHECKLIST = [
 ];
 
 export const CONTACT = {
-  email: 'contato@soscursos.com.br',
+  email: 'cursos.sos@outlook.com',
   hours: 'Seg - Sex: 08h às 18h',
 };
