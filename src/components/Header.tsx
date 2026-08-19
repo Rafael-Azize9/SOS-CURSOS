@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { Search } from 'lucide-react';
-import { ScrollTrigger } from '../lib/gsap';
 import { NAV_LINKS, wa, WA_MESSAGE_START } from '../data';
 
 export default function Header() {
@@ -35,19 +34,6 @@ export default function Header() {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [menuOpen]);
-
-  useEffect(() => {
-    const bar = document.querySelector('.scroll-progress');
-    if (!bar) return;
-    const trigger = ScrollTrigger.create({
-      start: 0,
-      end: 'max',
-      onUpdate: (self) => {
-        bar.setAttribute('style', `transform: scaleX(${self.progress})`);
-      },
-    });
-    return () => trigger.kill();
-  }, []);
 
   useEffect(() => {
     const links = document.querySelectorAll('.nav-links a[href^="#"], .mobile-menu a[href^="#"]');
@@ -89,7 +75,6 @@ export default function Header() {
 
   return (
     <header className={`site-header${scrolled ? ' scrolled' : ''}`} id="topo">
-      <span className="scroll-progress" aria-hidden="true"></span>
       <nav className="nav container" ref={navRef} aria-label="Menu principal">
         <a href="#topo" className="brand" aria-label="S.O.S Cursos início">
           <span className="brand-badge">SOS</span>

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { gsap } from '../lib/gsap';
 
 interface PreloaderProps {
@@ -8,6 +8,7 @@ interface PreloaderProps {
 export default function Preloader({ onComplete }: PreloaderProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const finished = useRef(false);
+  const [removed, setRemoved] = useState(false);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -16,6 +17,7 @@ export default function Preloader({ onComplete }: PreloaderProps) {
     const done = () => {
       if (finished.current) return;
       finished.current = true;
+      onComplete();
       gsap.to(rootRef.current, {
         autoAlpha: 0,
         scale: 1.02,
@@ -23,7 +25,7 @@ export default function Preloader({ onComplete }: PreloaderProps) {
         ease: 'power2.inOut',
         onComplete: () => {
           root.classList.remove('is-loading');
-          onComplete();
+          setRemoved(true);
         },
       });
     };
@@ -42,6 +44,8 @@ export default function Preloader({ onComplete }: PreloaderProps) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  if (removed) return null;
 
   return (
     <div id="preloader" ref={rootRef} role="status" aria-live="polite">

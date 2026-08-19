@@ -18,7 +18,6 @@ export default function Hero({ ready }: HeroProps) {
 
   useGSAP(
     () => {
-      if (!ready) return;
       const scope = rootRef.current;
       if (!scope) return;
       const mm = gsap.matchMedia(scope);
@@ -28,7 +27,7 @@ export default function Hero({ ready }: HeroProps) {
       });
 
       mm.add('(prefers-reduced-motion: no-preference)', () => {
-        const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+        const tl = gsap.timeline({ paused: !ready, defaults: { ease: 'power3.out' } });
         tl.from('.hero-eyebrow', { y: 22, autoAlpha: 0, duration: 0.7 })
           .from('.hero-copy h1', { y: 38, autoAlpha: 0, duration: 0.95 }, '-=0.45')
           .from('.hero-desc', { y: 26, autoAlpha: 0, duration: 0.8 }, '-=0.6')

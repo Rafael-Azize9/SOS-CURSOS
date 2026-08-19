@@ -445,31 +445,16 @@ p {
   position: fixed;
   inset: 0 0 auto;
   z-index: 100;
-  background: transparent;
+  background: #fff;
   border-bottom: 1px solid transparent;
   transition: background 0.4s var(--ease-out), border-color 0.4s var(--ease-out),
-    box-shadow 0.4s var(--ease-out), backdrop-filter 0.4s var(--ease-out);
+    box-shadow 0.4s var(--ease-out);
 }
 
 .site-header.scrolled {
-  background: rgba(255, 255, 255, 0.82);
-  -webkit-backdrop-filter: blur(18px) saturate(1.6);
-  backdrop-filter: blur(18px) saturate(1.6);
+  background: #fff;
   border-bottom-color: var(--line);
   box-shadow: 0 1px 0 rgba(16, 16, 20, 0.02), 0 12px 32px -24px rgba(16, 16, 20, 0.35);
-}
-
-.scroll-progress {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 2.5px;
-  width: 100%;
-  background: var(--grad-primary);
-  transform: scaleX(0);
-  transform-origin: left;
-  z-index: 1;
-  pointer-events: none;
 }
 
 .nav {

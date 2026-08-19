@@ -19,6 +19,11 @@ export default function App() {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     document.querySelectorAll('img').forEach((image) => {
       const markAsLoaded = () => image.classList.add('is-loaded');
       if (image.complete) {
@@ -32,7 +37,7 @@ export default function App() {
 
   return (
     <>
-      {!loaded && <Preloader onComplete={() => setLoaded(true)} />}
+      <Preloader onComplete={() => setLoaded(true)} />
       <Header />
       <main>
         <Hero ready={loaded} />
