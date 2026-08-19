@@ -73,7 +73,7 @@ O site sempre tenta carregar do banco e cai nos dados locais se o banco estiver 
 - **Escrita restrita por e-mail**: as políticas de escrita do `supabase-setup.sql` exigem que o usuário logado seja exatamente o admin — nenhuma outra conta, mesmo logada, altera ou apaga o catálogo.
 - **Chave pública por design**: o site usa a anon key (pública de propósito). A `service_role` é de acesso total e nunca deve entrar no código ou no repositório.
 - **Cadastros desligados**: mantenha "Allow new users to sign up" desativado no Supabase.
-- **Headers de proteção**: o site publica CSP, `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy` e HSTS via `public/_headers`.
+- **Headers de proteção**: o site publica CSP, `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy` e `Cross-Origin-Resource-Policy` via `vercel.json`. A página do admin não é armazenada em cache e os assets são imutáveis.
 - **Segredos**: chaves e tokens nunca devem ir para conversas ou repositórios; se vazarem, revogue imediatamente.
 
 ## Publicação
