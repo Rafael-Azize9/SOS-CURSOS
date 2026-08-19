@@ -4857,10 +4857,9 @@ p {
   max-width: 26rem;
   margin: 0 auto;
   padding: 2.2rem;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius-lg);
   background: var(--bg);
-  box-shadow: var(--shadow-1);
 }
 
 .admin-shell > .admin-card,
@@ -5195,6 +5194,150 @@ p {
   width: 1rem;
   height: 1rem;
   color: var(--primary);
+}
+
+/* Estatísticas do painel */
+
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.admin-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 1.2rem 1.3rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+
+.admin-stat svg {
+  width: 1.4rem;
+  height: 1.4rem;
+  margin-bottom: 0.3rem;
+  padding: 0.28rem;
+  border-radius: 0.6rem;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.admin-stat strong {
+  font-family: "Bricolage Grotesque", "Inter", sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.admin-stat span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+/* Filtros rápidos do painel */
+
+.admin-mini-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 1.2rem;
+}
+
+.admin-mini-chip {
+  padding: 0.42rem 0.9rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-full);
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  transition: background 0.25s var(--ease-out), color 0.25s var(--ease-out), border-color 0.25s var(--ease-out);
+}
+
+.admin-mini-chip:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.admin-mini-chip.active {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+}
+
+/* Desconto nas promoções */
+
+.admin-discount {
+  display: inline-block;
+  padding: 0.3rem 0.6rem;
+  border-radius: var(--radius-full);
+  background: var(--primary-soft);
+  color: var(--primary-deep);
+  font-size: 0.8rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.admin-discount.muted {
+  background: var(--surface-2);
+  color: var(--muted-2);
+  font-weight: 600;
+}
+
+/* Seções e formulários auxiliares */
+
+.admin-section-compact .admin-form-inline {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: 1rem;
+  margin-top: 1.4rem;
+}
+
+.admin-section-compact .admin-form-inline .admin-status {
+  grid-column: 1 / -1;
+}
+
+.admin-section-compact .admin-form-inline label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.admin-section-compact .admin-form-inline input {
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  font-size: 0.9rem;
+  transition: border-color 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+}
+
+.admin-section-compact .admin-form-inline input:focus-visible {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.admin-section-compact .admin-form-inline .btn {
+  justify-content: center;
+  height: 100%;
+}
+
+@media (max-width: 860px) {
+  .admin-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .admin-section-compact .admin-form-inline {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 860px) {

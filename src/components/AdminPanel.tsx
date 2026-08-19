@@ -1,6 +1,21 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { ArrowLeft, Database, LogOut, Plus, Save, Search, Tag, Timer, Trash2, Upload } from 'lucide-react';
-import { CATEGORIES, COURSES, PROMOS, type Course, type Promo } from '../data';
+import {
+  ArrowLeft,
+  Database,
+  GraduationCap,
+  KeyRound,
+  LogOut,
+  Plus,
+  Save,
+  Search,
+  Sparkles,
+  Tag,
+  Target,
+  Timer,
+  Trash2,
+  Upload,
+} from 'lucide-react';
+import { brl, CATEGORIES, COURSES, PROMOS, type Course, type Promo } from '../data';
 import { supabase } from '../lib/supabase';
 import { useSiteData } from '../lib/siteData';
 
@@ -14,6 +29,8 @@ const PROMO_ICON_OPTIONS = [
 
 const ADMIN_USERNAME = 'admin.azize';
 const ADMIN_EMAIL = 'admin.azize@soscursos.com';
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCK_SECONDS = 60;
 
 interface AdminSession {
   email: string | null;
@@ -48,6 +65,12 @@ export default function AdminPanel() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
+  const [failCount, setFailCount] = useState(0);
+  const [lockUntil, setLockUntil] = useState(0);
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
+  const [passwordMsg, setPasswordMsg] = useState('');
 
   useEffect(() => {
     if (!supabase) {
@@ -86,21 +109,57 @@ export default function AdminPanel() {
     event.preventDefault();
     setAuthError('');
     if (!supabase) return;
+    if (Date.now() < lockUntil) {
+      setAuthError(`Muitas tentativas. Aguarde ${Math.ceil((lockUntil - Date.now()) / 1000)} segundos.`);
+      return;
+    }
     if (username.trim().toLowerCase() !== ADMIN_USERNAME) {
       setAuthError('Usuário inválido.');
       return;
     }
     const { error } = await supabase.auth.signInWithPassword({ email: ADMIN_EMAIL, password });
     if (error) {
-      setAuthError(error.message);
+      const next = failCount + 1;
+      setFailCount(next);
+      if (next >= MAX_LOGIN_ATTEMPTS) {
+        setLockUntil(Date.now() + LOCK_SECONDS * 1000);
+        setFailCount(0);
+        setAuthError(`Muitas tentativas de login. Aguarde ${LOCK_SECONDS} segundos.`);
+      } else {
+        setAuthError(`${error.message} (tentativa ${next} de ${MAX_LOGIN_ATTEMPTS})`);
+      }
       return;
     }
+    setFailCount(0);
   };
 
   const handleSignOut = async () => {
     if (!supabase) return;
     await supabase.auth.signOut();
     setSession(null);
+  };
+
+  const handlePasswordChange = async (event: FormEvent) => {
+    event.preventDefault();
+    setPasswordMsg('');
+    if (!supabase) return;
+    if (newPassword.length < 8) {
+      setPasswordMsg('A nova senha deve ter pelo menos 8 caracteres.');
+      return;
+    }
+    if (newPassword !== newPasswordConfirm) {
+      setPasswordMsg('As senhas não conferem.');
+      return;
+    }
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) {
+      setPasswordMsg(`Não foi possível alterar: ${error.message}`);
+      return;
+    }
+    setPasswordMsg('Senha alterada com sucesso!');
+    setNewPassword('');
+    setNewPasswordConfirm('');
+    setShowPasswordForm(false);
   };
 
   if (checking) {
@@ -162,7 +221,7 @@ export default function AdminPanel() {
               />
             </label>
             {authError && <p className="admin-error">{authError}</p>}
-            <button type="submit" className="btn btn-primary">
+            <button type="submit" className="btn btn-primary" disabled={Date.now() < lockUntil}>
               Entrar
             </button>
           </form>
@@ -187,6 +246,16 @@ export default function AdminPanel() {
           </div>
           <div className="admin-header-actions">
             <span className="admin-session">Conectado: {ADMIN_USERNAME}</span>
+            <button
+              type="button"
+              className="btn btn-outline"
+              onClick={() => {
+                setShowPasswordForm((current) => !current);
+                setPasswordMsg('');
+              }}
+            >
+              <KeyRound strokeWidth={2.4} /> Trocar senha
+            </button>
             <a className="btn btn-outline" href="#topo">
               <ArrowLeft strokeWidth={2.4} /> Ver site
             </a>
@@ -198,9 +267,84 @@ export default function AdminPanel() {
       </header>
 
       <main className="container admin-main">
+        {showPasswordForm && (
+          <section className="admin-section admin-section-compact">
+            <div className="admin-section-head">
+              <div>
+                <p className="eyebrow">Segurança</p>
+                <h3>Alterar senha do administrador</h3>
+              </div>
+            </div>
+            <form className="admin-form admin-form-inline" onSubmit={handlePasswordChange}>
+              <label>
+                Nova senha (mínimo 8 caracteres)
+                <input
+                  type="password"
+                  required
+                  minLength={8}
+                  autoComplete="new-password"
+                  value={newPassword}
+                  onChange={(event) => setNewPassword(event.target.value)}
+                  placeholder="••••••••"
+                />
+              </label>
+              <label>
+                Repetir nova senha
+                <input
+                  type="password"
+                  required
+                  minLength={8}
+                  autoComplete="new-password"
+                  value={newPasswordConfirm}
+                  onChange={(event) => setNewPasswordConfirm(event.target.value)}
+                  placeholder="••••••••"
+                />
+              </label>
+              {passwordMsg && <p className="admin-status">{passwordMsg}</p>}
+              <button type="submit" className="btn btn-primary">
+                Salvar nova senha
+              </button>
+            </form>
+          </section>
+        )}
+
+        <StatsRow />
+
         <CoursesEditor onSaved={reload} />
         <PromosEditor onSaved={reload} />
       </main>
+    </div>
+  );
+}
+
+function StatsRow() {
+  const { courses, promos } = useSiteData();
+  const adults = courses.filter((course) => !course.kids);
+  const kids = courses.length - adults.length;
+  const average = adults.length ? adults.reduce((sum, course) => sum + course.price, 0) / adults.length : 0;
+
+  return (
+    <div className="admin-stats">
+      <div className="admin-stat">
+        <GraduationCap strokeWidth={2.2} />
+        <strong>{courses.length}</strong>
+        <span>Cursos no catálogo</span>
+      </div>
+      <div className="admin-stat">
+        <Tag strokeWidth={2.2} />
+        <strong>{promos.length}</strong>
+        <span>Promoções ativas</span>
+      </div>
+      <div className="admin-stat">
+        <Target strokeWidth={2.2} />
+        <strong>{brl(average)}</strong>
+        <span>Preço médio</span>
+      </div>
+      <div className="admin-stat">
+        <Sparkles strokeWidth={2.2} />
+        <strong>{kids}</strong>
+        <span>Cursos Kids</span>
+      </div>
     </div>
   );
 }
@@ -209,6 +353,7 @@ function CoursesEditor({ onSaved }: { onSaved: () => void }) {
   const { courses, configured } = useSiteData();
   const [drafts, setDrafts] = useState<CourseDraft[]>(() => toCourseDrafts(courses));
   const [query, setQuery] = useState('');
+  const [kidsFilter, setKidsFilter] = useState<'all' | 'adult' | 'kids'>('all');
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
 
@@ -298,8 +443,9 @@ function CoursesEditor({ onSaved }: { onSaved: () => void }) {
     const q = query.trim().toLowerCase();
     return drafts
       .map((draft, index) => ({ draft, index }))
-      .filter(({ draft }) => !q || draft.name.toLowerCase().includes(q));
-  }, [drafts, query]);
+      .filter(({ draft }) => !q || draft.name.toLowerCase().includes(q))
+      .filter(({ draft }) => kidsFilter === 'all' || (kidsFilter === 'kids' ? draft.kids : !draft.kids));
+  }, [drafts, query, kidsFilter]);
 
   if (!configured) return null;
 
@@ -328,6 +474,26 @@ function CoursesEditor({ onSaved }: { onSaved: () => void }) {
             <Plus strokeWidth={2.4} /> Adicionar curso
           </button>
         </div>
+      </div>
+
+      <div className="admin-mini-chips" role="group" aria-label="Filtrar por público">
+        {(
+          [
+            ['all', 'Todos'],
+            ['adult', 'Adultos'],
+            ['kids', 'Kids'],
+          ] as const
+        ).map(([value, label]) => (
+          <button
+            type="button"
+            key={value}
+            className={`admin-mini-chip${kidsFilter === value ? ' active' : ''}`}
+            aria-pressed={kidsFilter === value}
+            onClick={() => setKidsFilter(value)}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       {status && <p className="admin-status" aria-live="polite">{status}</p>}
@@ -544,91 +710,105 @@ function PromosEditor({ onSaved }: { onSaved: () => void }) {
               <th>Carga (h)</th>
               <th>De (R$)</th>
               <th>Por (R$)</th>
+              <th>Desconto</th>
               <th>Ícone</th>
               <th aria-label="Ações" />
             </tr>
           </thead>
           <tbody>
-            {drafts.map((draft, index) => (
-              <tr key={draft.id ?? `new-${index}`}>
-                <td>
-                  <input
-                    type="text"
-                    value={draft.name}
-                    onChange={(event) => updateDraft(index, { name: event.target.value })}
-                    aria-label="Nome da promoção"
-                  />
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    min={1}
-                    step={1}
-                    value={draft.hours}
-                    onChange={(event) => updateDraft(index, { hours: Number(event.target.value) })}
-                    aria-label="Carga horária"
-                  />
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    min={0}
-                    step={0.1}
-                    value={draft.from}
-                    onChange={(event) => updateDraft(index, { from: Number(event.target.value) })}
-                    aria-label="Preço original"
-                  />
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    min={0}
-                    step={0.1}
-                    value={draft.price}
-                    onChange={(event) => updateDraft(index, { price: Number(event.target.value) })}
-                    aria-label="Preço promocional"
-                  />
-                </td>
-                <td>
-                  <select
-                    value={draft.icon}
-                    onChange={(event) => updateDraft(index, { icon: event.target.value })}
-                    aria-label="Ícone"
-                  >
-                    <option value="">Nenhum</option>
-                    {PROMO_ICON_OPTIONS.map((icon) => (
-                      <option key={icon} value={icon}>
-                        {icon}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td>
-                  <div className="admin-row-actions">
-                    <button
-                      type="button"
-                      className="admin-icon-btn save"
-                      onClick={() => saveDraft(draft)}
-                      disabled={busy || !draft.name.trim()}
-                      aria-label={`Salvar promoção ${draft.name || 'nova'}`}
-                      title="Salvar"
+            {drafts.map((draft, index) => {
+              const discount =
+                draft.from > draft.price && draft.from > 0
+                  ? Math.round((1 - draft.price / draft.from) * 100)
+                  : 0;
+              return (
+                <tr key={draft.id ?? `new-${index}`}>
+                  <td>
+                    <input
+                      type="text"
+                      value={draft.name}
+                      onChange={(event) => updateDraft(index, { name: event.target.value })}
+                      aria-label="Nome da promoção"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={draft.hours}
+                      onChange={(event) => updateDraft(index, { hours: Number(event.target.value) })}
+                      aria-label="Carga horária"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      min={0}
+                      step={0.1}
+                      value={draft.from}
+                      onChange={(event) => updateDraft(index, { from: Number(event.target.value) })}
+                      aria-label="Preço original"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      min={0}
+                      step={0.1}
+                      value={draft.price}
+                      onChange={(event) => updateDraft(index, { price: Number(event.target.value) })}
+                      aria-label="Preço promocional"
+                    />
+                  </td>
+                  <td>
+                    {discount > 0 ? (
+                      <span className="admin-discount">-{discount}%</span>
+                    ) : (
+                      <span className="admin-discount muted">—</span>
+                    )}
+                  </td>
+                  <td>
+                    <select
+                      value={draft.icon}
+                      onChange={(event) => updateDraft(index, { icon: event.target.value })}
+                      aria-label="Ícone"
                     >
-                      <Save strokeWidth={2.2} />
-                    </button>
-                    <button
-                      type="button"
-                      className="admin-icon-btn danger"
-                      onClick={() => deleteDraft(draft)}
-                      disabled={busy}
-                      aria-label={`Excluir promoção ${draft.name || 'nova'}`}
-                      title="Excluir"
-                    >
-                      <Trash2 strokeWidth={2.2} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                      <option value="">Nenhum</option>
+                      {PROMO_ICON_OPTIONS.map((icon) => (
+                        <option key={icon} value={icon}>
+                          {icon}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                  <td>
+                    <div className="admin-row-actions">
+                      <button
+                        type="button"
+                        className="admin-icon-btn save"
+                        onClick={() => saveDraft(draft)}
+                        disabled={busy || !draft.name.trim()}
+                        aria-label={`Salvar promoção ${draft.name || 'nova'}`}
+                        title="Salvar"
+                      >
+                        <Save strokeWidth={2.2} />
+                      </button>
+                      <button
+                        type="button"
+                        className="admin-icon-btn danger"
+                        onClick={() => deleteDraft(draft)}
+                        disabled={busy}
+                        aria-label={`Excluir promoção ${draft.name || 'nova'}`}
+                        title="Excluir"
+                      >
+                        <Trash2 strokeWidth={2.2} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

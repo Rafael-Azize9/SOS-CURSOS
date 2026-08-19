@@ -40,3 +40,11 @@ O catálogo, os preços e as promoções são controlados por um banco no [Supab
 - **Adicionar curso novo**: na aba Cursos, clique em **Adicionar curso**, preencha os campos e salve.
 
 O site principal carrega os dados do banco automaticamente a cada visita; sem configuração do Supabase ele continua funcionando com os dados locais.
+
+## Segurança
+
+- **Painel restrito**: somente o usuário `admin.azize` entra no painel (a senha fica no Supabase, nunca no código). Após 5 tentativas erradas, o login trava por 60 segundos.
+- **Tokens**: a chave no `.env` é a *publishable key* (pública por design — ela já fica visível no navegador). A chave `service_role` dá acesso total e **nunca** deve ir para o código ou repositório.
+- **Cadastros bloqueados**: mantenha "Allow new users to sign up" desligado no Supabase (Authentication > Sign In/Providers > Email) para ninguém mais criar conta.
+- **Senha do painel**: troque pela aba "Trocar senha" no próprio painel sempre que necessário.
+- **Tokens de acesso ao GitHub/Vercel** não devem ser colados em conversas; se isso acontecer, revogue-os imediatamente em https://github.com/settings/tokens.
