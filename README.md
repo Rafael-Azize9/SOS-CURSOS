@@ -30,7 +30,7 @@ O catálogo, os preços e as promoções são controlados por um banco no [Supab
    VITE_SUPABASE_ANON_KEY=SUA-CHAVE-ANON
    ```
    ⚠️ Nunca suba o `.env` para o repositório (ele já está no `.gitignore`). No Netlify/Vercel, cadastre as mesmas duas variáveis em **Site settings > Environment variables** antes de publicar.
-5. Rode `npm run dev` e acesse `/#admin`. Clique em **Criar conta** com seu e-mail e uma senha (mínimo 6 caracteres) — esse é o acesso do administrador.
+5. Rode `npm run dev` e acesse `/#admin`. Entre com o usuário `admin.azize` e a senha da conta administradora (definida na criação do usuário no Supabase).
 6. Na aba **Cursos** e **Promoções**, use **Importar catálogo padrão** para carregar os dados atuais do site no banco. A partir daí, tudo o que você salvar vale para todos os visitantes.
 
 ### Como usar no dia a dia

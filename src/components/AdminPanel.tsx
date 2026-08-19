@@ -12,6 +12,9 @@ const PROMO_ICON_OPTIONS = [
   'promo-icon-chat.webp',
 ];
 
+const ADMIN_USERNAME = 'admin.azize';
+const ADMIN_EMAIL = 'admin.azize@soscursos.com';
+
 interface AdminSession {
   email: string | null;
 }
@@ -34,12 +37,15 @@ interface PromoDraft {
   icon: string;
 }
 
+function isAdminEmail(email: string | null): boolean {
+  return email?.toLowerCase() === ADMIN_EMAIL;
+}
+
 export default function AdminPanel() {
   const { reload } = useSiteData();
   const [session, setSession] = useState<AdminSession | null>(null);
   const [checking, setChecking] = useState(true);
-  const [mode, setMode] = useState<'login' | 'signup'>('login');
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
 
@@ -48,12 +54,30 @@ export default function AdminPanel() {
       setChecking(false);
       return;
     }
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session ? { email: data.session.user.email ?? null } : null);
+    const client = supabase;
+    client.auth.getSession().then(({ data }) => {
+      const sessionEmail = data.session?.user.email ?? null;
+      if (!isAdminEmail(sessionEmail)) {
+        client.auth.signOut();
+        setSession(null);
+      } else {
+        setSession({ email: sessionEmail });
+      }
       setChecking(false);
     });
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, currentSession) => {
-      setSession(currentSession ? { email: currentSession.user.email ?? null } : null);
+    const { data: subscription } = client.auth.onAuthStateChange((_event, currentSession) => {
+      if (!currentSession) {
+        setSession(null);
+        return;
+      }
+      const sessionEmail = currentSession.user.email ?? null;
+      if (!isAdminEmail(sessionEmail)) {
+        client.auth.signOut();
+        setSession(null);
+        setAuthError('Acesso restrito ao administrador.');
+        return;
+      }
+      setSession({ email: sessionEmail });
     });
     return () => subscription.subscription.unsubscribe();
   }, []);
@@ -62,13 +86,15 @@ export default function AdminPanel() {
     event.preventDefault();
     setAuthError('');
     if (!supabase) return;
-    const action = mode === 'login' ? 'signInWithPassword' : 'signUp';
-    const { error } = await supabase.auth[action]({ email, password });
+    if (username.trim().toLowerCase() !== ADMIN_USERNAME) {
+      setAuthError('Usuário inválido.');
+      return;
+    }
+    const { error } = await supabase.auth.signInWithPassword({ email: ADMIN_EMAIL, password });
     if (error) {
       setAuthError(error.message);
       return;
     }
-    if (mode === 'signup') setMode('login');
   };
 
   const handleSignOut = async () => {
@@ -110,15 +136,17 @@ export default function AdminPanel() {
         <div className="admin-card">
           <p className="eyebrow">Painel de administração</p>
           <h2>Entrar</h2>
+          <p className="admin-login-note">Acesso restrito ao administrador do site.</p>
           <form className="admin-form" onSubmit={handleAuth}>
             <label>
-              E-mail
+              Usuário
               <input
-                type="email"
+                type="text"
                 required
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="voce@email.com"
+                autoComplete="username"
+                value={username}
+                onChange={(event) => setUsername(event.target.value)}
+                placeholder="admin.azize"
               />
             </label>
             <label>
@@ -127,6 +155,7 @@ export default function AdminPanel() {
                 type="password"
                 required
                 minLength={6}
+                autoComplete="current-password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 placeholder="••••••••"
@@ -134,12 +163,9 @@ export default function AdminPanel() {
             </label>
             {authError && <p className="admin-error">{authError}</p>}
             <button type="submit" className="btn btn-primary">
-              {mode === 'login' ? 'Entrar' : 'Criar conta'}
+              Entrar
             </button>
           </form>
-          <button type="button" className="admin-link" onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}>
-            {mode === 'login' ? 'Ainda não tenho conta — criar agora' : 'Já tenho conta — entrar'}
-          </button>
           <a className="admin-link" href="#topo">
             ← Voltar ao site
           </a>
@@ -160,7 +186,7 @@ export default function AdminPanel() {
             </div>
           </div>
           <div className="admin-header-actions">
-            <span className="admin-session">{session.email}</span>
+            <span className="admin-session">Conectado: {ADMIN_USERNAME}</span>
             <a className="btn btn-outline" href="#topo">
               <ArrowLeft strokeWidth={2.4} /> Ver site
             </a>
