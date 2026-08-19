@@ -41,14 +41,20 @@ drop policy if exists "courses_admin_write" on public.courses;
 drop policy if exists "promos_public_read" on public.promos;
 drop policy if exists "promos_admin_write" on public.promos;
 
+-- Somente o administrador pode alterar o catálogo.
+-- (antes, QUALQUER usuário logado podia apagar tudo - correcao)
 create policy "courses_public_read" on public.courses
   for select using (true);
 
 create policy "courses_admin_write" on public.courses
-  for all to authenticated using (true) with check (true);
+  for all to authenticated
+  using (auth.jwt() ->> 'email' = 'admin.azize@soscursos.com')
+  with check (auth.jwt() ->> 'email' = 'admin.azize@soscursos.com');
 
 create policy "promos_public_read" on public.promos
   for select using (true);
 
 create policy "promos_admin_write" on public.promos
-  for all to authenticated using (true) with check (true);
+  for all to authenticated
+  using (auth.jwt() ->> 'email' = 'admin.azize@soscursos.com')
+  with check (auth.jwt() ->> 'email' = 'admin.azize@soscursos.com');

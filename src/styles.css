@@ -50,6 +50,11 @@
   --whatsapp: #25d366;
   --whatsapp-deep: #1db954;
 
+  --danger: #b3261e;
+  --danger-deep: #8c1a13;
+  --danger-soft: #fdecea;
+  --danger-border: #f2c4be;
+
   --shadow-1: 0 1px 2px rgba(16, 16, 20, 0.04), 0 10px 30px -14px rgba(16, 16, 20, 0.14);
   --shadow-2: 0 2px 6px rgba(16, 16, 20, 0.04), 0 26px 56px -22px rgba(16, 16, 20, 0.2);
   --shadow-red: 0 14px 32px -12px var(--primary-glow);
@@ -5194,6 +5199,45 @@ p {
   width: 1rem;
   height: 1rem;
   color: var(--primary);
+}
+
+.admin-banner {
+  display: flex;
+  gap: 0.9rem;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  padding: 1.1rem 1.3rem;
+  border: 1px solid var(--danger-border);
+  border-radius: var(--radius-lg);
+  background: var(--danger-soft);
+  color: var(--danger-deep);
+}
+
+.admin-banner svg {
+  flex: 0 0 auto;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-top: 0.15rem;
+  color: var(--danger-deep);
+}
+
+.admin-banner strong {
+  font-size: 0.95rem;
+}
+
+.admin-banner p {
+  margin: 0.25rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.admin-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 /* Estatísticas do painel */

@@ -38,12 +38,23 @@ O catálogo, os preços e as promoções são controlados por um banco no [Supab
 - **Mudar preço de um curso**: acesse `/#admin`, edite o valor na tabela de cursos e clique no botão de salvar da linha.
 - **Adicionar promoção**: na aba Promoções, preencha nome, carga horária, "De" (preço antigo) e "Por" (preço promocional) e salve. A promoção aparece na seção de ofertas do catálogo e com o selo "Promo" nos cards do curso.
 - **Adicionar curso novo**: na aba Cursos, clique em **Adicionar curso**, preencha os campos e salve.
+- **Backup do catálogo**: no painel, a seção **Backup & Recuperação** baixa um arquivo JSON com todos os cursos e promoções. Guarde-o em local seguro e restaure quando precisar.
+- **Catálogo incompleto**: se o painel mostrar o aviso vermelho "Catálogo incompleto no banco de dados", clique em **Restaurar catálogo padrão** para recriar os dados do site (nada é apagado; valores existentes são atualizados pelo nome).
+
+### Recuperação de emergência (catálogo apagado)
+
+Se o banco perder os dados (como já aconteceu), recupere pelo caminho mais rápido que conseguir:
+
+1. **No painel**: entre em `/#admin` e use **Restaurar catálogo padrão** na seção Backup & Recuperação.
+2. **Direto no banco**: abra o arquivo `restore-catalog.sql` (na raiz do projeto), cole no **SQL Editor** do Supabase e clique em **RUN**. Ele reinsere os 121 cursos e as 5 promoções padrão sem sobrescrever linhas já existentes (`ON CONFLICT (name) DO NOTHING`).
+3. **Restaurar backup**: se você baixou um backup JSON, use o botão **Restaurar backup** no painel.
 
 O site principal carrega os dados do banco automaticamente a cada visita; sem configuração do Supabase ele continua funcionando com os dados locais.
 
 ## Segurança
 
 - **Painel restrito**: somente o usuário `admin.azize` entra no painel (a senha fica no Supabase, nunca no código). Após 5 tentativas erradas, o login trava por 60 segundos.
+- **Escrita protegida por e-mail**: as políticas de escrita nas tabelas `courses` e `promos` exigem que o usuário logado seja exatamente `admin.azize@soscursos.com` (veja `supabase-setup.sql`). Qualquer outra conta (mesmo logada) não consegue alterar ou apagar o catálogo.
 - **Tokens**: a chave no `.env` é a *publishable key* (pública por design — ela já fica visível no navegador). A chave `service_role` dá acesso total e **nunca** deve ir para o código ou repositório.
 - **Cadastros bloqueados**: mantenha "Allow new users to sign up" desligado no Supabase (Authentication > Sign In/Providers > Email) para ninguém mais criar conta.
 - **Senha do painel**: troque pela aba "Trocar senha" no próprio painel sempre que necessário.
