@@ -19,7 +19,7 @@ import {
   Trash2,
   Upload,
 } from 'lucide-react';
-import { brl, CATEGORIES, COURSES, PROMOS, type Course, type Promo } from '../data';
+import { brl, COURSES, PROMOS, type Course, type Promo } from '../data';
 import { supabase } from '../lib/supabase';
 import { useSiteData } from '../lib/siteData';
 
@@ -38,15 +38,6 @@ const LOCK_SECONDS = 60;
 
 interface AdminSession {
   email: string | null;
-}
-
-interface CourseDraft {
-  id: string | null;
-  name: string;
-  category: string;
-  hours: number;
-  price: number;
-  kids: boolean;
 }
 
 interface PromoDraft {
@@ -550,68 +541,27 @@ function BackupManager({ onRestored }: { onRestored: () => void }) {
 
 function CoursesEditor({ onSaved }: { onSaved: () => void }) {
   const { courses, configured } = useSiteData();
-  const [drafts, setDrafts] = useState<CourseDraft[]>(() => toCourseDrafts(courses));
+  const [prices, setPrices] = useState<Record<string, number>>(() => priceMap(courses));
   const [query, setQuery] = useState('');
-  const [kidsFilter, setKidsFilter] = useState<'all' | 'adult' | 'kids'>('all');
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
 
   useEffect(() => {
-    setDrafts(toCourseDrafts(courses));
+    setPrices(priceMap(courses));
   }, [courses]);
 
-  const updateDraft = (index: number, patch: Partial<CourseDraft>) => {
-    setDrafts((current) => current.map((draft, i) => (i === index ? { ...draft, ...patch } : draft)));
-  };
-
-  const addDraft = () => {
-    setDrafts((current) => [
-      ...current,
-      { id: null, name: '', category: CATEGORIES[1], hours: 20, price: 69.9, kids: false },
-    ]);
-  };
-
-  const removeDraft = (index: number) => {
-    setDrafts((current) => current.filter((_, i) => i !== index));
-  };
-
-  const saveDraft = async (draft: CourseDraft) => {
-    if (!supabase || !draft.name.trim()) return;
+  const savePrice = async (course: Course) => {
+    if (!supabase || !course.id) return;
+    const price = prices[course.id] ?? course.price;
     setBusy(true);
     setStatus('');
-    const payload = {
-      name: draft.name.trim(),
-      category: draft.category,
-      hours: Number(draft.hours),
-      price: Number(draft.price),
-      kids: draft.kids,
-    };
-    const { error } = draft.id
-      ? await supabase.from('courses').update(payload).eq('id', draft.id)
-      : await supabase.from('courses').insert(payload);
+    const { error } = await supabase.from('courses').update({ price }).eq('id', course.id);
     setBusy(false);
     if (error) {
-      setStatus(`Erro ao salvar "${draft.name}": ${error.message}`);
+      setStatus(`Erro ao salvar "${course.name}": ${error.message}`);
       return;
     }
-    setStatus(`Curso "${draft.name}" salvo.`);
-    await onSaved();
-  };
-
-  const deleteDraft = async (draft: CourseDraft) => {
-    if (!supabase || !draft.id) {
-      removeDraft(drafts.indexOf(draft));
-      return;
-    }
-    if (!window.confirm(`Excluir o curso "${draft.name}"?`)) return;
-    setBusy(true);
-    const { error } = await supabase.from('courses').delete().eq('id', draft.id);
-    setBusy(false);
-    if (error) {
-      setStatus(`Erro ao excluir "${draft.name}": ${error.message}`);
-      return;
-    }
-    setStatus(`Curso "${draft.name}" excluído.`);
+    setStatus(`Preço de "${course.name}" atualizado para ${brl(price)}.`);
     await onSaved();
   };
 
@@ -641,11 +591,8 @@ function CoursesEditor({ onSaved }: { onSaved: () => void }) {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return drafts
-      .map((draft, index) => ({ draft, index }))
-      .filter(({ draft }) => !q || draft.name.toLowerCase().includes(q))
-      .filter(({ draft }) => kidsFilter === 'all' || (kidsFilter === 'kids' ? draft.kids : !draft.kids));
-  }, [drafts, query, kidsFilter]);
+    return courses.filter((course) => !q || course.name.toLowerCase().includes(q));
+  }, [courses, query]);
 
   if (!configured) return null;
 
@@ -670,30 +617,7 @@ function CoursesEditor({ onSaved }: { onSaved: () => void }) {
           <button type="button" className="btn btn-outline" onClick={importLocal} disabled={busy}>
             <Upload strokeWidth={2.4} /> Importar catálogo padrão
           </button>
-          <button type="button" className="btn btn-primary" onClick={addDraft}>
-            <Plus strokeWidth={2.4} /> Adicionar curso
-          </button>
         </div>
-      </div>
-
-      <div className="admin-mini-chips" role="group" aria-label="Filtrar por público">
-        {(
-          [
-            ['all', 'Todos'],
-            ['adult', 'Adultos'],
-            ['kids', 'Kids'],
-          ] as const
-        ).map(([value, label]) => (
-          <button
-            type="button"
-            key={value}
-            className={`admin-mini-chip${kidsFilter === value ? ' active' : ''}`}
-            aria-pressed={kidsFilter === value}
-            onClick={() => setKidsFilter(value)}
-          >
-            {label}
-          </button>
-        ))}
       </div>
 
       {status && <p className="admin-status" aria-live="polite">{status}</p>}
@@ -705,89 +629,55 @@ function CoursesEditor({ onSaved }: { onSaved: () => void }) {
               <th>Curso</th>
               <th>Categoria</th>
               <th>Carga (h)</th>
+              <th>Público</th>
               <th>Preço (R$)</th>
-              <th>Kids</th>
               <th aria-label="Ações" />
             </tr>
           </thead>
           <tbody>
-            {filtered.map(({ draft, index }) => (
-              <tr key={draft.id ?? `new-${index}`}>
-                <td>
-                  <input
-                    type="text"
-                    value={draft.name}
-                    onChange={(event) => updateDraft(index, { name: event.target.value })}
-                    aria-label="Nome do curso"
-                  />
-                </td>
-                <td>
-                  <select
-                    value={draft.category}
-                    onChange={(event) => updateDraft(index, { category: event.target.value })}
-                    aria-label="Categoria"
-                  >
-                    {CATEGORIES.filter((category) => category !== 'Todos').map((category) => (
-                      <option key={category} value={category}>
-                        {category}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    min={1}
-                    step={1}
-                    value={draft.hours}
-                    onChange={(event) => updateDraft(index, { hours: Number(event.target.value) })}
-                    aria-label="Carga horária"
-                  />
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    min={0}
-                    step={0.1}
-                    value={draft.price}
-                    onChange={(event) => updateDraft(index, { price: Number(event.target.value) })}
-                    aria-label="Preço"
-                  />
-                </td>
-                <td>
-                  <input
-                    type="checkbox"
-                    checked={draft.kids}
-                    onChange={(event) => updateDraft(index, { kids: event.target.checked })}
-                    aria-label="Curso Kids"
-                  />
-                </td>
-                <td>
-                  <div className="admin-row-actions">
-                    <button
-                      type="button"
-                      className="admin-icon-btn save"
-                      onClick={() => saveDraft(draft)}
-                      disabled={busy || !draft.name.trim()}
-                      aria-label={`Salvar ${draft.name || 'curso'}`}
-                      title="Salvar"
-                    >
-                      <Save strokeWidth={2.2} />
-                    </button>
-                    <button
-                      type="button"
-                      className="admin-icon-btn danger"
-                      onClick={() => deleteDraft(draft)}
-                      disabled={busy}
-                      aria-label={`Excluir ${draft.name || 'curso'}`}
-                      title="Excluir"
-                    >
-                      <Trash2 strokeWidth={2.2} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+            {filtered.map((course) => {
+              const key = course.id ?? course.name;
+              return (
+                <tr key={key}>
+                  <td>{course.name}</td>
+                  <td>{course.category}</td>
+                  <td>{course.hours}</td>
+                  <td>
+                    {course.kids ? (
+                      <span className="admin-kids-badge">Kids</span>
+                    ) : (
+                      <span className="admin-muted-text">Adulto</span>
+                    )}
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      min={0}
+                      step={0.1}
+                      value={prices[key] ?? course.price}
+                      onChange={(event) =>
+                        setPrices((current) => ({ ...current, [key]: Number(event.target.value) }))
+                      }
+                      aria-label={`Preço de ${course.name}`}
+                    />
+                  </td>
+                  <td>
+                    <div className="admin-row-actions">
+                      <button
+                        type="button"
+                        className="admin-icon-btn save"
+                        onClick={() => savePrice(course)}
+                        disabled={busy || (prices[key] ?? course.price) === course.price}
+                        aria-label={`Salvar preço de ${course.name}`}
+                        title="Salvar preço"
+                      >
+                        <Save strokeWidth={2.2} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -1022,15 +912,8 @@ function PromosEditor({ onSaved }: { onSaved: () => void }) {
   );
 }
 
-function toCourseDrafts(courses: Course[]): CourseDraft[] {
-  return courses.map((course) => ({
-    id: course.id ?? null,
-    name: course.name,
-    category: course.category,
-    hours: course.hours,
-    price: course.price,
-    kids: Boolean(course.kids),
-  }));
+function priceMap(courses: Course[]): Record<string, number> {
+  return Object.fromEntries(courses.map((course) => [course.id ?? course.name, course.price]));
 }
 
 function toPromoDrafts(promos: Promo[]): PromoDraft[] {

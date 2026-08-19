@@ -5240,6 +5240,23 @@ p {
   white-space: nowrap;
 }
 
+.admin-kids-badge {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary-deep);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.admin-muted-text {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
 /* Estatísticas do painel */
 
 .admin-stats {
