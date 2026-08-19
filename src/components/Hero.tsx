@@ -41,7 +41,7 @@ export default function Hero({ ready }: HeroProps) {
           );
       });
     },
-    { scope: rootRef, dependencies: [ready] }
+    { scope: rootRef, dependencies: [ready], revertOnUpdate: true }
   );
 
   return (
