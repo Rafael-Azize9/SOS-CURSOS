@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, Gift, PartyPopper, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Gift, Lock, PartyPopper, RotateCcw, X } from 'lucide-react';
 import { wa } from '../data';
 import { gsap } from '../lib/gsap';
 import { useSiteData } from '../lib/siteData';
@@ -10,12 +10,12 @@ interface WheelSegment {
 }
 
 const SEGMENTS: WheelSegment[] = [
-  { pct: 5, weight: 30 },
-  { pct: 10, weight: 25 },
-  { pct: 15, weight: 18 },
+  { pct: 5, weight: 24 },
+  { pct: 10, weight: 20 },
+  { pct: 15, weight: 30 },
   { pct: 20, weight: 12 },
   { pct: 25, weight: 8 },
-  { pct: 30, weight: 5 },
+  { pct: 30, weight: 4 },
   { pct: 35, weight: 2 },
 ];
 
@@ -92,6 +92,13 @@ export default function Wheel() {
   const [spinning, setSpinning] = useState(false);
   const [prize, setPrize] = useState<WheelSegment | null>(null);
   const [confetti, setConfetti] = useState<ConfettiPiece[]>([]);
+  const [hasSpun, setHasSpun] = useState(() => {
+    try {
+      return sessionStorage.getItem('sos-wheel-spun') === '1';
+    } catch {
+      return false;
+    }
+  });
   const wheelRef = useRef<SVGSVGElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const rotationRef = useRef(0);
@@ -140,7 +147,7 @@ export default function Wheel() {
   const coursesForSelect = useMemo(() => courses, [courses]);
 
   const spin = () => {
-    if (spinning || !course) return;
+    if (spinning || !course || hasSpun) return;
     setPrize(null);
     setConfetti([]);
     const index = pickSegment();
@@ -157,6 +164,12 @@ export default function Wheel() {
         setSpinning(false);
         setConfetti(makeConfetti(44));
         setPrize(SEGMENTS[index]);
+        try {
+          sessionStorage.setItem('sos-wheel-spun', '1');
+        } catch {
+          /* ignore */
+        }
+        setHasSpun(true);
       },
     });
     timeline
@@ -224,7 +237,7 @@ export default function Wheel() {
             <ul className="wheel-hero-benefits">
               <li>Até 35% OFF na matrícula</li>
               <li>Válido em qualquer curso do catálogo</li>
-              <li>Prêmio garantido em todas as rodadas</li>
+              <li>1 girada por sessão com prêmio garantido</li>
             </ul>
           </div>
           <div className="wheel-hero-visual" data-reveal>
@@ -307,16 +320,23 @@ export default function Wheel() {
         </div>
 
         <div className="wheel-actions" data-reveal>
-          <button type="button" className="btn btn-primary" onClick={spin} disabled={spinning || !course}>
-            <RotateCcw strokeWidth={2.4} className={spinning ? 'wheel-spin-icon' : undefined} />{' '}
-            {spinning ? 'Girando...' : 'Girar a roleta'}
-          </button>
-          {prize && (
-            <a className="btn btn-outline" href="#roleta">
-              <ArrowRight strokeWidth={2.4} /> Girar novamente
-            </a>
+          {hasSpun ? (
+            <button type="button" className="btn btn-primary" disabled>
+              <Lock strokeWidth={2.4} /> Desconto liberado
+            </button>
+          ) : (
+            <button type="button" className="btn btn-primary" onClick={spin} disabled={spinning || !course}>
+              <RotateCcw strokeWidth={2.4} className={spinning ? 'wheel-spin-icon' : undefined} />{' '}
+              {spinning ? 'Girando...' : 'Girar a roleta'}
+            </button>
           )}
         </div>
+        {hasSpun && !prize && (
+          <p className="wheel-locked" data-reveal>
+            <Lock strokeWidth={2.2} /> Você já girou a roleta nesta sessão e seu desconto foi liberado.
+            Use o WhatsApp para aproveitar sua vantagem.
+          </p>
+        )}
       </main>
 
       {prize && (
@@ -337,6 +357,14 @@ export default function Wheel() {
             ))}
           </div>
           <div className="wheel-prize-card" role="status">
+              <button
+                type="button"
+                className="wheel-prize-close"
+                onClick={() => setPrize(null)}
+                aria-label="Fechar"
+              >
+                <X strokeWidth={2.4} />
+              </button>
               <PartyPopper strokeWidth={2.2} />
               <p className="eyebrow">Você acabou de ganhar</p>
               <h3>PARABÉNS!</h3>
