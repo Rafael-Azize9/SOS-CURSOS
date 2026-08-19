@@ -1699,6 +1699,7 @@ p {
    -------------------------------------------------------------------------- */
 
 .wheel-shell {
+  position: relative;
   min-height: 100vh;
   background: var(--surface);
 }
@@ -1734,6 +1735,7 @@ p {
   border-radius: 0.7rem;
   background: var(--grad-primary);
   color: #fff;
+  box-shadow: var(--shadow-red);
 }
 
 .wheel-brand h2 {
@@ -1746,13 +1748,158 @@ p {
   font-size: 0.68rem;
 }
 
+/* Hero da roleta com imagem da marca */
+
+.wheel-hero {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--primary) 7%, var(--bg)),
+    var(--surface) 82%
+  );
+}
+
+.wheel-hero-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(19rem, 0.95fr);
+  gap: clamp(2rem, 4vw, 4.5rem);
+  align-items: center;
+  padding-top: 3rem;
+  padding-bottom: 3.2rem;
+}
+
+.wheel-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 1.05rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid color-mix(in srgb, var(--primary) 24%, transparent);
+  box-shadow: var(--shadow-1);
+  color: var(--primary-deep);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.wheel-hero-badge svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.wheel-hero-copy h1 {
+  margin: 1.15rem 0 0.85rem;
+  font-size: clamp(1.9rem, 3.4vw, 2.65rem);
+}
+
+.wheel-hero-copy > p {
+  max-width: 34rem;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.wheel-hero-benefits {
+  display: grid;
+  gap: 0.55rem;
+  margin: 1.4rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wheel-hero-benefits li {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.wheel-hero-benefits li::before {
+  content: "";
+  flex: none;
+  width: 1.05rem;
+  height: 1.05rem;
+  border-radius: 50%;
+  background: var(--grad-primary);
+  box-shadow: var(--shadow-red);
+}
+
+.wheel-hero-visual {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.wheel-hero-visual .image-frame {
+  position: relative;
+  inset: auto;
+  width: min(24rem, 100%);
+  margin: 0 auto;
+  z-index: 1;
+}
+
+.wheel-hero-visual .image-frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 1.7rem;
+  border: 1px solid color-mix(in srgb, var(--primary) 18%, transparent);
+  filter: drop-shadow(0 26px 38px rgba(120, 0, 10, 0.16));
+}
+
+.wheel-shape {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.wheel-shape-ring {
+  top: -4.5rem;
+  right: -6rem;
+  width: 26rem;
+  height: 26rem;
+  border-radius: 50%;
+  border: 1.2rem solid color-mix(in srgb, var(--primary) 10%, transparent);
+  animation: float-y 9s var(--ease-in-out) infinite;
+}
+
+.wheel-shape-dots {
+  bottom: -1.5rem;
+  left: -3.5rem;
+  width: 6rem;
+  height: 6rem;
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--primary) 55%, transparent) 0.2rem,
+    transparent 0.28rem
+  );
+  background-size: 1.3rem 1.3rem;
+  opacity: 0.5;
+  animation: float-y 8s var(--ease-in-out) 1.2s infinite;
+}
+
+/* Conteúdo principal */
+
 .wheel-main {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 2.6rem;
+  padding-top: 2.8rem;
   padding-bottom: 4.5rem;
   text-align: center;
+}
+
+.wheel-steps {
+  grid-column: auto;
+  grid-row: auto;
+  width: 100%;
+  margin: 0;
 }
 
 .wheel-main .lead {
@@ -1764,7 +1911,7 @@ p {
   flex-direction: column;
   gap: 0.45rem;
   width: min(100%, 24rem);
-  margin-top: 1.6rem;
+  margin-top: 1.7rem;
   font-size: 0.9rem;
   font-weight: 700;
   color: var(--muted);
@@ -1788,37 +1935,124 @@ p {
   box-shadow: 0 0 0 3px var(--primary-glow);
 }
 
+/* Palco da roleta */
+
 .wheel-stage {
   position: relative;
   display: grid;
   place-items: center;
-  width: min(92vw, 26rem);
-  margin-top: 2.2rem;
-  padding: 1.2rem;
+  width: min(92vw, 27rem);
+  margin-top: 2.4rem;
+  padding: 1.35rem;
   border-radius: 50%;
   background: var(--bg);
-  box-shadow: var(--shadow-2);
+  border: 1px solid color-mix(in srgb, var(--primary) 16%, transparent);
+  box-shadow: var(--shadow-2), var(--shadow-red);
+}
+
+.wheel-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0.75rem;
+  border-radius: 50%;
+  border: 2px dashed color-mix(in srgb, var(--primary) 26%, transparent);
+  pointer-events: none;
 }
 
 .wheel-pointer {
   position: absolute;
-  top: -0.55rem;
+  top: -0.5rem;
   left: 50%;
-  z-index: 5;
+  z-index: 6;
   width: 0;
   height: 0;
-  border-right: 0.8rem solid transparent;
-  border-left: 0.8rem solid transparent;
-  border-top: 1.7rem solid var(--primary-deep);
+  border-right: 0.85rem solid transparent;
+  border-left: 0.85rem solid transparent;
+  border-top: 1.85rem solid var(--primary);
+  filter: drop-shadow(0 6px 12px rgba(200, 15, 35, 0.45));
   transform: translateX(-50%);
 }
 
+.wheel-pointer::after {
+  content: "";
+  position: absolute;
+  top: -1.05rem;
+  left: 50%;
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 3px solid var(--primary);
+  transform: translateX(-50%);
+}
+
+.wheel-offer-badge {
+  position: absolute;
+  top: 9%;
+  right: -1.5%;
+  z-index: 6;
+  padding: 0.5rem 0.95rem;
+  border-radius: 999px;
+  background: var(--grad-primary);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  box-shadow: var(--shadow-red);
+  transform: rotate(8deg);
+  animation: float-y 5s var(--ease-in-out) infinite;
+}
+
+.wheel-deco {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.wheel-deco-blob {
+  top: 45%;
+  left: 50%;
+  width: 31rem;
+  height: 31rem;
+  margin: -15.5rem 0 0 -15.5rem;
+  border-radius: 46% 54% 58% 42% / 48% 44% 56% 52%;
+  background: linear-gradient(140deg, #ffe9ec, #ffd3d9);
+  animation: blob-morph 12s var(--ease-in-out) infinite;
+}
+
+.wheel-deco-dots {
+  bottom: -2rem;
+  left: -4.5rem;
+  width: 5.5rem;
+  height: 5.5rem;
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--primary) 50%, transparent) 0.18rem,
+    transparent 0.26rem
+  );
+  background-size: 1.15rem 1.15rem;
+  opacity: 0.45;
+  animation: float-y 8s var(--ease-in-out) 1.2s infinite;
+}
+
 .wheel {
+  position: relative;
+  z-index: 1;
   display: block;
   width: 100%;
   height: auto;
   overflow: visible;
   border-radius: 50%;
+}
+
+.wheel-spin-icon {
+  animation: spin-cw 1s linear infinite;
+}
+
+@keyframes spin-cw {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .wheel-actions {
@@ -1833,6 +2067,8 @@ p {
   min-width: 13rem;
 }
 
+/* Confetes por trás do site ao ganhar */
+
 .wheel-prize-overlay {
   position: fixed;
   inset: 0;
@@ -1840,8 +2076,29 @@ p {
   display: grid;
   place-items: center;
   padding: 1.2rem;
-  background: rgba(16, 16, 20, 0.62);
+  background: rgba(16, 16, 20, 0.45);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
   overflow: hidden;
+}
+
+.wheel-confetti-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.wheel-confetti-piece {
+  position: absolute;
+  top: 0;
+  border-radius: 0.15rem;
+  will-change: transform;
+}
+
+.wheel-confetti-piece.round {
+  border-radius: 50%;
 }
 
 .wheel-prize-card {
@@ -1893,12 +2150,53 @@ p {
   line-height: 1.5;
 }
 
-.wheel-confetti {
-  position: absolute;
-  top: -40px;
-  width: 0.6rem;
-  height: 1rem;
-  border-radius: 0.15rem;
+@media (max-width: 900px) {
+  .wheel-hero-row {
+    grid-template-columns: 1fr;
+  }
+
+  .wheel-hero-visual {
+    order: -1;
+  }
+
+  .wheel-hero-visual .image-frame {
+    width: min(19rem, 78vw);
+  }
+
+  .wheel-hero-copy {
+    text-align: center;
+  }
+
+  .wheel-hero-copy > p {
+    margin: 0 auto;
+  }
+
+  .wheel-hero-benefits {
+    justify-items: center;
+    text-align: left;
+  }
+}
+
+@media (max-width: 640px) {
+  .wheel-header-row {
+    padding-top: 0.8rem;
+    padding-bottom: 0.8rem;
+  }
+
+  .wheel-header-row .btn {
+    padding: 0.6rem 0.9rem;
+    font-size: 0.78rem;
+  }
+
+  .wheel-brand h2 {
+    font-size: 1rem;
+  }
+
+  .wheel-offer-badge {
+    right: 0;
+    font-size: 0.62rem;
+    padding: 0.45rem 0.8rem;
+  }
 }
 
 /* --------------------------------------------------------------------------

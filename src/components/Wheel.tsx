@@ -21,10 +21,26 @@ const SEGMENTS: WheelSegment[] = [
 
 const SEG_ANGLE = 360 / SEGMENTS.length;
 const SEG_COLORS = ['#e11d2e', '#ffffff', '#ff8a92', '#fdecee', '#c70f24', '#ffffff', '#e11d2e'];
+const CONFETTI_COLORS = ['#e11d2e', '#ff8a92', '#c70f24', '#f2a33c', '#ffffff'];
 
 const WHEEL_SIZE = 420;
 const WHEEL_CENTER = WHEEL_SIZE / 2;
 const WHEEL_RADIUS = 195;
+
+const WHEEL_STEPS = [
+  { n: '01', title: 'Escolha o curso', text: 'Selecione no menu abaixo o curso que você quer fazer.' },
+  { n: '02', title: 'Gire a roleta', text: 'A sorte decide: você pode ganhar de 5% a 35% de desconto.' },
+  { n: '03', title: 'Receba no WhatsApp', text: 'Clique no botão e fale com a gente para garantir seu prêmio.' },
+];
+
+interface ConfettiPiece {
+  id: number;
+  left: number;
+  color: string;
+  round: boolean;
+  delay: number;
+  size: number;
+}
 
 function polarToCartesian(cx: number, cy: number, radius: number, angleDeg: number) {
   const rad = (angleDeg * Math.PI) / 180;
@@ -59,13 +75,25 @@ function pickSegment(): number {
   return SEGMENTS.length - 1;
 }
 
+function makeConfetti(count: number): ConfettiPiece[] {
+  return Array.from({ length: count }, (_, id) => ({
+    id,
+    left: Math.random() * 100,
+    color: CONFETTI_COLORS[id % CONFETTI_COLORS.length],
+    round: id % 4 === 0,
+    delay: Math.random() * 0.7,
+    size: 9 + Math.random() * 9,
+  }));
+}
+
 export default function Wheel() {
   const { courses, ready } = useSiteData();
   const [course, setCourse] = useState('');
   const [spinning, setSpinning] = useState(false);
   const [prize, setPrize] = useState<WheelSegment | null>(null);
-  const [confettiEls, setConfettiEls] = useState<number[]>([]);
+  const [confetti, setConfetti] = useState<ConfettiPiece[]>([]);
   const wheelRef = useRef<SVGGElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const rotationRef = useRef(0);
   const spinCount = useRef(0);
 
@@ -78,28 +106,35 @@ export default function Wheel() {
   useEffect(() => {
     if (spinCount.current === 0) return;
     const card = document.querySelector('.wheel-prize-card');
-    if (!card) return;
-    gsap.fromTo(card, { scale: 0.3, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: 'elastic.out(1, 0.5)' });
-    const count = 26;
-    setConfettiEls(Array.from({ length: count }, (_, i) => i));
-    const ctx = gsap.context(() => {
-      gsap.utils.toArray<HTMLElement>('.wheel-confetti').forEach((el) => {
-        gsap.fromTo(
-          el,
-          { y: -40, x: 0, rotation: 0, opacity: 1 },
-          {
-            y: () => 220 + Math.random() * 260,
-            x: () => (Math.random() - 0.5) * 320,
-            rotation: () => (Math.random() - 0.5) * 720,
-            opacity: 0,
-            duration: () => 1.1 + Math.random() * 0.9,
-            delay: () => Math.random() * 0.35,
-            ease: 'power2.out',
-          }
-        );
-      });
-    });
-    return () => ctx.revert();
+    if (card) {
+      gsap.fromTo(
+        card,
+        { scale: 0.3, opacity: 0, y: 40 },
+        { scale: 1, opacity: 1, y: 0, duration: 0.7, ease: 'elastic.out(1, 0.55)' }
+      );
+      gsap.fromTo(
+        '.wheel-prize-card .wheel-prize-value',
+        { scale: 0.4, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.5, delay: 0.45, ease: 'back.out(2.2)' }
+      );
+    }
+    const layer = document.querySelector('.wheel-confetti-layer');
+    if (layer) {
+      gsap.fromTo(
+        layer.children,
+        { y: -40, opacity: 1 },
+        {
+          y: () => window.innerHeight + 80,
+          x: () => (Math.random() - 0.5) * 240,
+          rotation: () => (Math.random() - 0.5) * 1080,
+          opacity: 0,
+          duration: () => 2.6 + Math.random() * 2.2,
+          delay: () => Math.random() * 0.6,
+          ease: 'power1.in',
+          stagger: 0.02,
+        }
+      );
+    }
   }, [prize]);
 
   const coursesForSelect = useMemo(() => courses, [courses]);
@@ -107,22 +142,31 @@ export default function Wheel() {
   const spin = () => {
     if (spinning || !course) return;
     setPrize(null);
-    setConfettiEls([]);
+    setConfetti([]);
     const index = pickSegment();
     spinCount.current += 1;
     const spins = 5 + Math.floor(Math.random() * 3);
     const delta = spins * 360 + (360 - (index * SEG_ANGLE + SEG_ANGLE / 2));
-    rotationRef.current += delta;
+    const finalRotation = rotationRef.current + delta;
+    const overshoot = finalRotation + 16;
+    const duration = 4.4 + spins * 0.3;
+    rotationRef.current = finalRotation;
     setSpinning(true);
-    gsap.to(wheelRef.current, {
-      rotation: rotationRef.current,
-      duration: 5,
-      ease: 'power4.out',
+    const timeline = gsap.timeline({
       onComplete: () => {
         setSpinning(false);
+        setConfetti(makeConfetti(44));
         setPrize(SEGMENTS[index]);
       },
     });
+    timeline
+      .to(wheelRef.current, { rotation: overshoot, duration, ease: 'power4.out' })
+      .to(wheelRef.current, { rotation: finalRotation, duration: 0.9, ease: 'elastic.out(1, 0.35)' });
+    gsap.fromTo(
+      stageRef.current,
+      { scale: 1 },
+      { scale: 1.04, duration: 0.25, ease: 'power2.out', yoyo: true, repeat: 1, clearProps: 'scale' }
+    );
   };
 
   const wheelLabel = (index: number) => {
@@ -166,14 +210,52 @@ export default function Wheel() {
         </div>
       </header>
 
-      <main className="container wheel-main">
-        <p className="eyebrow">Sorteio de descontos</p>
-        <h2>Gire a roleta e garanta até 35% de desconto</h2>
-        <p className="lead">
-          Escolha o curso que você quer, gire a roleta e leve o prêmio para a sua matrícula.
-        </p>
+      <section className="wheel-hero">
+        <div className="container wheel-hero-row">
+          <div className="wheel-hero-copy" data-reveal>
+            <span className="wheel-hero-badge">
+              <Gift strokeWidth={2.2} /> Sorteio de descontos
+            </span>
+            <h1>Gire a roleta e ganhe até 35% de desconto</h1>
+            <p>
+              Escolha o curso dos seus sonhos, gire a roleta premiada da S.O.S Cursos e leve seu
+              desconto direto para o WhatsApp.
+            </p>
+            <ul className="wheel-hero-benefits">
+              <li>Até 35% OFF na matrícula</li>
+              <li>Válido em qualquer curso do catálogo</li>
+              <li>Prêmio garantido em todas as rodadas</li>
+            </ul>
+          </div>
+          <div className="wheel-hero-visual" data-reveal>
+            <span className="wheel-shape wheel-shape-ring" aria-hidden="true"></span>
+            <span className="wheel-shape wheel-shape-dots" aria-hidden="true"></span>
+            <div className="image-frame">
+              <img
+                src="/assets/imagem_sos1.webp"
+                alt="Estudante da S.O.S Cursos sorrindo com notebook nas mãos"
+                width="1303"
+                height="1207"
+                loading="eager"
+                decoding="async"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
 
-        <label className="wheel-course-label" htmlFor="wheel-course">
+      <main className="container wheel-main">
+        <ol className="steps-grid wheel-steps" data-reveal>
+          {WHEEL_STEPS.map((step) => (
+            <li className="step-card" key={step.n}>
+              <span className="step-number">{step.n}</span>
+              <h3>{step.title}</h3>
+              <p>{step.text}</p>
+            </li>
+          ))}
+        </ol>
+
+        <label className="wheel-course-label" htmlFor="wheel-course" data-reveal>
           Qual curso você tem interesse?
           <select
             id="wheel-course"
@@ -189,8 +271,11 @@ export default function Wheel() {
           </select>
         </label>
 
-        <div className="wheel-stage">
+        <div className="wheel-stage" ref={stageRef} data-reveal>
+          <span className="wheel-deco wheel-deco-blob" aria-hidden="true"></span>
+          <span className="wheel-deco wheel-deco-dots" aria-hidden="true"></span>
           <span className="wheel-pointer" aria-hidden="true" />
+          <span className="wheel-offer-badge">ATÉ 35% OFF</span>
           <svg
             className="wheel"
             viewBox={`0 0 ${WHEEL_SIZE} ${WHEEL_SIZE}`}
@@ -199,7 +284,13 @@ export default function Wheel() {
           >
             <g ref={wheelRef} style={{ transformOrigin: '50% 50%' }}>
               {SEGMENTS.map((_, index) => (
-                <path key={index} d={segmentPath(index)} fill={SEG_COLORS[index % SEG_COLORS.length]} stroke="#dcdce2" strokeWidth="2" />
+                <path
+                  key={index}
+                  d={segmentPath(index)}
+                  fill={SEG_COLORS[index % SEG_COLORS.length]}
+                  stroke="#dcdce2"
+                  strokeWidth="2"
+                />
               ))}
               {SEGMENTS.map((_, index) => wheelLabel(index))}
             </g>
@@ -213,9 +304,10 @@ export default function Wheel() {
           </svg>
         </div>
 
-        <div className="wheel-actions">
+        <div className="wheel-actions" data-reveal>
           <button type="button" className="btn btn-primary" onClick={spin} disabled={spinning || !course}>
-            <RotateCcw strokeWidth={2.4} /> {spinning ? 'Girando...' : 'Girar a roleta'}
+            <RotateCcw strokeWidth={2.4} className={spinning ? 'wheel-spin-icon' : undefined} />{' '}
+            {spinning ? 'Girando...' : 'Girar a roleta'}
           </button>
           {prize && (
             <a className="btn btn-outline" href="#roleta">
@@ -223,21 +315,26 @@ export default function Wheel() {
             </a>
           )}
         </div>
+      </main>
 
-        {prize && (
-          <div className="wheel-prize-overlay">
-            {confettiEls.map((item) => (
+      {prize && (
+        <div className="wheel-prize-overlay">
+          <div className="wheel-confetti-layer" aria-hidden="true">
+            {confetti.map((piece) => (
               <span
-                key={item}
-                className="wheel-confetti"
+                key={piece.id}
+                className={piece.round ? 'wheel-confetti-piece round' : 'wheel-confetti-piece'}
                 style={{
-                  left: `${8 + (item * 37) % 84}%`,
-                  background: item % 3 === 0 ? '#e11d2e' : item % 3 === 1 ? '#ff8a92' : '#c70f24',
+                  left: `${piece.left}%`,
+                  width: piece.size,
+                  height: piece.size * (piece.round ? 1 : 1.6),
+                  background: piece.color,
+                  animationDelay: `${piece.delay}s`,
                 }}
-                aria-hidden="true"
               />
             ))}
-            <div className="wheel-prize-card" role="status">
+          </div>
+          <div className="wheel-prize-card" role="status">
               <PartyPopper strokeWidth={2.2} />
               <p className="eyebrow">Você acabou de ganhar</p>
               <h3>PARABÉNS!</h3>
@@ -258,8 +355,7 @@ export default function Wheel() {
               </p>
             </div>
           </div>
-        )}
-      </main>
+      )}
     </div>
   );
 }
