@@ -1,61 +1,85 @@
-# React + Vite
+# S.O.S Cursos — Site de cursos online
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Este é o projeto do site da **S.O.S Cursos**: um catálogo online com mais de 100 cursos (informática, idiomas, administração e preparatórios) com certificado válido em todo o Brasil. O site é single-page (React + Vite), com matrícula direta pelo WhatsApp e painel administrativo próprio para controlar preços e promoções.
 
-Currently, two official plugins are available:
+Feito do meu jeito, com a cara da S.O.S: identidade vermelha, tipografia Bricolage Grotesque e foco em conversão.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## O que o site tem
 
-## React Compiler
+- **Home completa**: hero com imagem da marca, marquee de cursos, benefícios, como funciona, depoimentos, FAQ, números da escola e rodapé com WhatsApp.
+- **Catálogo com busca**: filtro por busca, ordenação por preço/carga horária e seção de **promoções da semana** com selo "Promo".
+- **Seção Kids**: vitrine da linha infantil da S.O.S.
+- **Roleta Premiada** (`/#roleta`): o visitante gira uma vez por sessão e ganha de 5% a 35% de desconto em qualquer curso, com prêmio enviado pelo WhatsApp.
+- **Certificado interativo**: preview de certificado com nome do aluno.
+- **Painel admin** (`/#admin`): login restrito, edição de preços, gestão de promoções e backup/restauração do catálogo.
+- **Supabase**: catálogo, preços e promoções vivem no banco; sem banco configurado, o site funciona com dados locais.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tecnologias
 
-## Expanding the Oxlint configuration
+| Camada | Escolha |
+| --- | --- |
+| Framework | React 19 + TypeScript (Vite) |
+| Animações | GSAP |
+| Ícones | Lucide |
+| Banco | Supabase (PostgreSQL) |
+| Lint | Oxlint |
+| Deploy | Vercel (automação a partir do GitHub) |
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## Rodando localmente
 
-## Banco de dados (cursos, preços e promoções)
+```bash
+npm install
+npm run dev
+```
 
-O catálogo, os preços e as promoções são controlados por um banco no [Supabase](https://supabase.com) (plano gratuito). O painel de edição fica em `/#admin` (com login por e-mail e senha).
+Abra o endereço que o Vite mostrar (normalmente `http://localhost:5173`). O painel fica em `http://localhost:5173/#admin`.
 
-### Passo a passo (uma vez só)
+Verificação antes de publicar:
 
-1. Crie uma conta grátis em https://supabase.com e um novo projeto.
-2. No projeto, abra **SQL Editor > New query**, cole o conteúdo de `supabase-setup.sql` e clique em **RUN** (cria as tabelas `courses` e `promos` com as regras de segurança).
-3. Em **Project Settings > API**, copie a **Project URL** e a **anon public key**.
-4. Na raiz do projeto, crie um arquivo `.env` baseado no `.env.example`:
+```bash
+npm run lint
+npm run build
+```
+
+## Banco de dados
+
+O catálogo é controlado pelo Supabase. Para configurar do zero:
+
+1. Crie um projeto gratuito em [supabase.com](https://supabase.com).
+2. No **SQL Editor**, rode o conteúdo de `supabase-setup.sql` (cria as tabelas `courses` e `promos` com as regras de segurança).
+3. Copie a **Project URL** e a **anon public key** em Project Settings > API.
+4. Crie um arquivo `.env` a partir do `.env.example`:
    ```
    VITE_SUPABASE_URL=https://SEU-PROJETO.supabase.co
    VITE_SUPABASE_ANON_KEY=SUA-CHAVE-ANON
    ```
-   ⚠️ Nunca suba o `.env` para o repositório (ele já está no `.gitignore`). No Netlify/Vercel, cadastre as mesmas duas variáveis em **Site settings > Environment variables** antes de publicar.
-5. Rode `npm run dev` e acesse `/#admin`. Entre com o usuário `admin.azize` e a senha da conta administradora (definida na criação do usuário no Supabase).
-6. Na aba **Cursos** e **Promoções**, use **Importar catálogo padrão** para carregar os dados atuais do site no banco. A partir daí, tudo o que você salvar vale para todos os visitantes.
+5. No painel (`/#admin`), use **Importar catálogo padrão** para carregar os cursos e promoções no banco.
 
-### Como usar no dia a dia
+No dia a dia, o painel é o que manda: edite preços, crie promoções, exporte backup JSON e restaure quando precisar. Se o banco aparecer incompleto, o aviso **Catálogo incompleto no banco de dados** aparece no painel e o botão **Restaurar catálogo padrão** resolve em um clique.
 
-- **Mudar preço de um curso**: acesse `/#admin`, edite o valor na tabela de cursos e clique no botão de salvar da linha.
-- **Adicionar promoção**: na aba Promoções, preencha nome, carga horária, "De" (preço antigo) e "Por" (preço promocional) e salve. A promoção aparece na seção de ofertas do catálogo e com o selo "Promo" nos cards do curso.
-- **Adicionar curso novo**: na aba Cursos, clique em **Adicionar curso**, preencha os campos e salve.
-- **Backup do catálogo**: no painel, a seção **Backup & Recuperação** baixa um arquivo JSON com todos os cursos e promoções. Guarde-o em local seguro e restaure quando precisar.
-- **Catálogo incompleto**: se o painel mostrar o aviso vermelho "Catálogo incompleto no banco de dados", clique em **Restaurar catálogo padrão** para recriar os dados do site (nada é apagado; valores existentes são atualizados pelo nome).
+### Recuperação de emergência
 
-### Recuperação de emergência (catálogo apagado)
+Se o banco perder os dados, há três caminhos, do mais rápido ao mais garantido:
 
-Se o banco perder os dados (como já aconteceu), recupere pelo caminho mais rápido que conseguir:
+1. **No painel**: `/#admin` > **Restaurar catálogo padrão**.
+2. **Direto no SQL**: rode `restore-catalog.sql` no SQL Editor do Supabase — reinsere os 121 cursos e as 5 promoções sem sobrescrever nada (`ON CONFLICT (name) DO NOTHING`).
+3. **Backup JSON**: use **Restaurar backup** no painel com o arquivo exportado anteriormente.
 
-1. **No painel**: entre em `/#admin` e use **Restaurar catálogo padrão** na seção Backup & Recuperação.
-2. **Direto no banco**: abra o arquivo `restore-catalog.sql` (na raiz do projeto), cole no **SQL Editor** do Supabase e clique em **RUN**. Ele reinsere os 121 cursos e as 5 promoções padrão sem sobrescrever linhas já existentes (`ON CONFLICT (name) DO NOTHING`).
-3. **Restaurar backup**: se você baixou um backup JSON, use o botão **Restaurar backup** no painel.
-
-O site principal carrega os dados do banco automaticamente a cada visita; sem configuração do Supabase ele continua funcionando com os dados locais.
+O site sempre tenta carregar do banco e cai nos dados locais se o banco estiver indisponível.
 
 ## Segurança
 
-- **Painel restrito**: somente o usuário `admin.azize` entra no painel (a senha fica no Supabase, nunca no código). Após 5 tentativas erradas, o login trava por 60 segundos.
-- **Escrita protegida por e-mail**: as políticas de escrita nas tabelas `courses` e `promos` exigem que o usuário logado seja exatamente `admin.azize@soscursos.com` (veja `supabase-setup.sql`). Qualquer outra conta (mesmo logada) não consegue alterar ou apagar o catálogo.
-- **Tokens**: a chave no `.env` é a *publishable key* (pública por design — ela já fica visível no navegador). A chave `service_role` dá acesso total e **nunca** deve ir para o código ou repositório.
-- **Cadastros bloqueados**: mantenha "Allow new users to sign up" desligado no Supabase (Authentication > Sign In/Providers > Email) para ninguém mais criar conta.
-- **Senha do painel**: troque pela aba "Trocar senha" no próprio painel sempre que necessário.
-- **Tokens de acesso ao GitHub/Vercel** não devem ser colados em conversas; se isso acontecer, revogue-os imediatamente em https://github.com/settings/tokens.
+- **Painel fechado**: só o e-mail `admin.azize@soscursos.com` entra; a senha vive no Supabase, nunca no código. Após 5 tentativas erradas, o login trava por 60 segundos.
+- **Escrita restrita por e-mail**: as políticas de escrita do `supabase-setup.sql` exigem que o usuário logado seja exatamente o admin — nenhuma outra conta, mesmo logada, altera ou apaga o catálogo.
+- **Chave pública por design**: o site usa a anon key (pública de propósito). A `service_role` é de acesso total e nunca deve entrar no código ou no repositório.
+- **Cadastros desligados**: mantenha "Allow new users to sign up" desativado no Supabase.
+- **Headers de proteção**: o site publica CSP, `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy` e HSTS via `public/_headers`.
+- **Segredos**: chaves e tokens nunca devem ir para conversas ou repositórios; se vazarem, revogue imediatamente.
+
+## Publicação
+
+O repositório é `Rafael-Azize9/SOS-CURSOS` e o deploy é automático no Vercel a partir do branch `main`. Após cada push, o Vercel publica sozinho — basta conferir os hashes dos assets novos no site.
+
+---
+
+Feito por Rafael Azize para a S.O.S Cursos.

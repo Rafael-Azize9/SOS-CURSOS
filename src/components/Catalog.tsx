@@ -74,7 +74,6 @@ export default function Catalog() {
             <div className="promo-grid" data-reveal>
               {promos.map((promo) => (
                 <article className="course-card" key={promo.id ?? promo.name}>
-                  <span className="offer-tag">Promo</span>
                   <div className="course-card-head">
                     <span className="course-card-icon promo-card-icon">
                       {promo.icon ? (
@@ -92,7 +91,10 @@ export default function Catalog() {
                       )}
                     </span>
                     <div className="course-card-head-text">
-                      <p className="eyebrow course-category">Oferta</p>
+                      <div className="promo-card-head-line">
+                        <p className="eyebrow course-category">Oferta</p>
+                        <span className="offer-tag offer-tag-inline">Promo</span>
+                      </div>
                       <h3>{promo.name}</h3>
                     </div>
                   </div>

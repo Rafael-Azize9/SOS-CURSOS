@@ -1370,10 +1370,26 @@ p {
   background: color-mix(in srgb, var(--primary) 10%, var(--surface-2));
 }
 
+.promo-card-head-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.promo-grid .course-card .offer-tag {
+  position: static;
+  flex: none;
+  padding: 0.28rem 0.7rem;
+  font-size: 0.6rem;
+  box-shadow: none;
+}
+
 .promo-grid .course-card h3 {
-  margin-top: 0.4rem;
-  max-width: calc(100% - 4.5rem);
+  margin-top: 0.45rem;
+  max-width: none;
   min-height: 0;
+  text-wrap: balance;
 }
 
 .course-card h3 {
