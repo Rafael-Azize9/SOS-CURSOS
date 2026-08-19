@@ -16,6 +16,7 @@ import Footer from './components/Footer';
 import FloatStack from './components/FloatStack';
 import Privacy from './components/Privacy';
 import AdminPanel from './components/AdminPanel';
+import Wheel from './components/Wheel';
 
 export default function App() {
   const [loaded, setLoaded] = useState(false);
@@ -56,6 +57,14 @@ export default function App() {
     return (
       <>
         <AdminPanel />
+      </>
+    );
+  }
+
+  if (route === '#roleta') {
+    return (
+      <>
+        <Wheel />
       </>
     );
   }

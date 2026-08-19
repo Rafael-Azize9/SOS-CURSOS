@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, Search, Tag, Timer } from 'lucide-react';
+import { ArrowRight, Gift, Search, Tag, Timer } from 'lucide-react';
 import { brl, CATEGORIES, categoryCounts, enrollLink, getFilteredCourses, PAGE_SIZE } from '../data';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { useSpotlight } from '../hooks/useSpotlight';
@@ -203,6 +203,9 @@ export default function Catalog() {
               <ArrowRight strokeWidth={2.4} />
             </button>
           )}
+          <a className="btn btn-outline" href="#roleta">
+            <Gift strokeWidth={2.4} /> Roleta Premiada — até 35% OFF
+          </a>
         </div>
       </div>
     </section>
