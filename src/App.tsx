@@ -14,14 +14,23 @@ import FAQ from './components/FAQ';
 import CTA from './components/CTA';
 import Footer from './components/Footer';
 import FloatStack from './components/FloatStack';
+import Privacy from './components/Privacy';
+import CookieConsent from './components/CookieConsent';
 
 export default function App() {
   const [loaded, setLoaded] = useState(false);
+  const [route, setRoute] = useState(() => window.location.hash);
+
+  useEffect(() => {
+    const onHash = () => setRoute(window.location.hash);
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
 
   useEffect(() => {
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
     window.scrollTo(0, 0);
-  }, []);
+  }, [route]);
 
   useEffect(() => {
     document.querySelectorAll('img').forEach((image) => {
@@ -33,27 +42,34 @@ export default function App() {
         image.addEventListener('error', markAsLoaded, { once: true });
       }
     });
-  }, [loaded]);
+  }, [loaded, route]);
 
   return (
     <>
-      <Preloader onComplete={() => setLoaded(true)} />
-      <Header />
-      <main>
-        <Hero ready={loaded} />
-        <Courses />
-        <Catalog />
-        <Kids />
-        <Numbers />
-        <WhyUs />
-        <HowItWorks />
-        <Certificate />
-        <Testimonials />
-        <FAQ />
-        <CTA />
-      </main>
-      <FloatStack />
-      <Footer />
+      {route === '#privacidade' ? (
+        <Privacy />
+      ) : (
+        <>
+          <Preloader onComplete={() => setLoaded(true)} />
+          <Header />
+          <main>
+            <Hero ready={loaded} />
+            <Courses />
+            <Catalog />
+            <Kids />
+            <Numbers />
+            <WhyUs />
+            <HowItWorks />
+            <Certificate />
+            <Testimonials />
+            <FAQ />
+            <CTA />
+          </main>
+          <FloatStack />
+          <Footer />
+        </>
+      )}
+      <CookieConsent />
     </>
   );
 }

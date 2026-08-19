@@ -1,16 +1,25 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowRight, Search, Timer } from 'lucide-react';
 import { brl, CATEGORIES, categoryCounts, enrollLink, getFilteredCourses, PAGE_SIZE } from '../data';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { useSpotlight } from '../hooks/useSpotlight';
+import { getCookie, hasConsent, setCookie } from '../lib/cookies';
 import CourseIcon from './CourseIcon';
+
+const PREFS_TTL_DAYS = 365;
 
 export default function Catalog() {
   const rootRef = useRef<HTMLElement>(null);
-  const [activeCategory, setActiveCategory] = useState('Todos');
+  const [activeCategory, setActiveCategory] = useState(() => getCookie('sos_cat') ?? 'Todos');
   const [search, setSearch] = useState('');
-  const [sort, setSort] = useState('az');
+  const [sort, setSort] = useState(() => getCookie('sos_sort') ?? 'az');
   const [limit, setLimit] = useState(PAGE_SIZE);
+
+  useEffect(() => {
+    if (!hasConsent()) return;
+    setCookie('sos_cat', activeCategory, PREFS_TTL_DAYS);
+    setCookie('sos_sort', sort, PREFS_TTL_DAYS);
+  }, [activeCategory, sort]);
 
   const counts = useMemo(() => categoryCounts(), []);
   const filtered = useMemo(
@@ -65,7 +74,7 @@ export default function Catalog() {
               className={`filter-chip${activeCategory === category ? ' active' : ''}`}
               key={category}
               aria-pressed={activeCategory === category}
-              onClick={() => resetAndApply(() => setActiveCategory(category))}
+                            onClick={() => resetAndApply(() => setActiveCategory(category))}
             >
               {category} <span>{category === 'Todos' ? counts.Todos : counts[category] || 0}</span>
             </button>

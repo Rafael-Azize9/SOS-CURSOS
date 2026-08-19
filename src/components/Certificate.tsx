@@ -75,15 +75,7 @@ export default function Certificate() {
               <strong>__/__/____</strong>
             </div>
           </div>
-          <div className="certificate-verify" aria-hidden="true">
-            <span className="verify-qr"></span>
-            <small>
-              Verifique a autenticidade deste certificado
-              <br />
-              em: sos-cursos.com/validar
-            </small>
-            <span className="cert-seal">★</span>
-          </div>
+          <span className="cert-seal" aria-hidden="true">★</span>
         </div>
       </div>
       <p className="legal-note">

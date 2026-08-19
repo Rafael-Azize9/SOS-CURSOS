@@ -38,8 +38,7 @@ function TiktokIcon() {
 
 const INSTITUTIONAL_LINKS = [
   { label: 'Quem somos', href: '#topo' },
-  { label: 'Política de Privacidade', href: null },
-  { label: 'Termos de Uso', href: null },
+  { label: 'Política de Privacidade', href: '#privacidade' },
   { label: 'Certificados', href: '#certificado' },
   { label: 'FAQ', href: '#duvidas' },
 ];
