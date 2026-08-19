@@ -15,17 +15,25 @@ import CTA from './components/CTA';
 import Footer from './components/Footer';
 import FloatStack from './components/FloatStack';
 import Privacy from './components/Privacy';
-import CookieConsent from './components/CookieConsent';
+import AdminPanel from './components/AdminPanel';
 
 export default function App() {
   const [loaded, setLoaded] = useState(false);
-  const [route, setRoute] = useState(() => window.location.hash);
+  const [route, setRoute] = useState(() => {
+    const path = window.location.pathname.replace(/\/+$/, '');
+    if (path === '/admin') return '#admin';
+    return window.location.hash;
+  });
 
   useEffect(() => {
+    if (route === '#admin' && window.location.hash !== '#admin') {
+      window.location.replace(window.location.origin + '/#admin');
+      return;
+    }
     const onHash = () => setRoute(window.location.hash);
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
-  }, []);
+  }, [route]);
 
   useEffect(() => {
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
@@ -43,6 +51,14 @@ export default function App() {
       }
     });
   }, [loaded, route]);
+
+  if (route === '#admin') {
+    return (
+      <>
+        <AdminPanel />
+      </>
+    );
+  }
 
   return (
     <>
@@ -69,7 +85,6 @@ export default function App() {
           <Footer />
         </>
       )}
-      <CookieConsent />
     </>
   );
 }

@@ -34,7 +34,6 @@ const SECTIONS = [
       '– Comunicação sobre cursos em que você demonstrou interesse: legítimo interesse (art. 7º, IX) ou consentimento (art. 7º, I);',
       '– Segurança, prevenção a fraudes e proteção do nosso conteúdo: legítimo interesse (art. 7º, IX);',
       '– Cumprimento de obrigações legais, fiscais e regulatórias: cumprimento de obrigação legal (art. 7º, II);',
-      '– Armazenamento de preferências de navegação em cookies: consentimento (art. 7º, I), conforme a seção 7 desta política.',
       'O consentimento, quando exigido, é livre, informado e inequívoco, e pode ser revogado a qualquer momento, sem prejuízo da legalidade do tratamento realizado antes da revogação.',
     ],
   },
@@ -53,23 +52,7 @@ const SECTIONS = [
     ],
   },
   {
-    title: '7. Cookies e preferências do usuário (art. 7º, I, da LGPD)',
-    body: [
-      'Utilizamos cookies — pequenos arquivos de texto armazenados no seu navegador — para lembrar suas preferências e melhorar sua experiência de navegação. O uso de cookies de preferências depende do seu consentimento, que é solicitado na primeira visita por meio do nosso aviso de cookies. Você pode aceitar todos, aceitar somente os essenciais ou alterar sua escolha a qualquer momento, bastando limpar os cookies do navegador.',
-      'Cookies utilizados por este site:',
-    ],
-    table: [
-      ['Cookie', 'Finalidade', 'Prazo'],
-      ['sos_consent', 'Registra a sua escolha sobre o uso de cookies (consentimento)', '365 dias'],
-      ['sos_cat', 'Lembra a categoria de curso selecionada no catálogo', '365 dias'],
-      ['sos_sort', 'Lembra a ordem de exibição preferida no catálogo', '365 dias'],
-    ],
-    afterTable: [
-      'Você pode bloquear ou excluir cookies nas configurações do seu navegador a qualquer momento. Nesse caso, algumas preferências poderão ser perdidas, mas o site continuará funcionando normalmente.',
-    ],
-  },
-  {
-    title: '8. Direitos do titular (art. 18 da LGPD)',
+    title: '7. Direitos do titular (art. 18 da LGPD)',
     body: [
       'Nos termos do art. 18 da LGPD, você pode solicitar, a qualquer momento e gratuitamente:',
       '– confirmação da existência de tratamento de seus dados pessoais;',
@@ -81,17 +64,17 @@ const SECTIONS = [
       '– informação sobre as entidades públicas e privadas com as quais compartilhamos seus dados;',
       '– informação sobre a possibilidade de não fornecer consentimento e sobre as consequências da negativa;',
       '– revogação do consentimento (art. 8º, § 5º).',
-      'As solicitações devem ser encaminhadas pelo e-mail indicado na seção 12 e serão respondidas no prazo de até 15 (quinze) dias, conforme o art. 18, § 2º, da LGPD. Caso não seja possível atender à solicitação, informaremos os motivos. Você também pode apresentar reclamação à Autoridade Nacional de Proteção de Dados (ANPD).',
+      'As solicitações devem ser encaminhadas pelo e-mail indicado na seção 11 e serão respondidas no prazo de até 15 (quinze) dias, conforme o art. 18, § 2º, da LGPD. Caso não seja possível atender à solicitação, informaremos os motivos. Você também pode apresentar reclamação à Autoridade Nacional de Proteção de Dados (ANPD).',
     ],
   },
   {
-    title: '9. Crianças e adolescentes (art. 14 da LGPD)',
+    title: '8. Crianças e adolescentes (art. 14 da LGPD)',
     body: [
       'Os cursos da linha Kids são voltados ao público infantil. A matrícula e o atendimento são realizados exclusivamente com a supervisão e o consentimento específico e destacado dos pais ou responsáveis legais, conforme o art. 14 da LGPD. Os dados de crianças e adolescentes são tratados com redobrado cuidado e utilizados somente para a prestação do serviço contratado.',
     ],
   },
   {
-    title: '10. Segurança, retenção e incidentes',
+    title: '9. Segurança, retenção e incidentes',
     body: [
       'Adotamos medidas técnicas e organizacionais adequadas, incluindo criptografia em trânsito e controle de acesso, para proteger seus dados contra acessos não autorizados, perda, alteração ou destruição (art. 46 da LGPD).',
       'Mantemos seus dados somente pelo tempo necessário às finalidades desta política ou enquanto houver obrigação legal de guarda, inclusive para o exercício regular de direitos em processo judicial, administrativo ou arbitral.',
@@ -99,7 +82,7 @@ const SECTIONS = [
     ],
   },
   {
-    title: '11. Alterações desta política',
+    title: '10. Alterações desta política',
     body: [
       'Esta política pode ser atualizada sempre que necessário, especialmente para refletir mudanças legais ou nos nossos serviços. A versão vigente estará sempre disponível nesta página, com a data de atualização. A continuidade no uso do site após a publicação de alterações implica ciência e concordância com os novos termos.',
     ],
@@ -147,35 +130,12 @@ export default function Privacy() {
                     <p key={paragraph}>{paragraph}</p>
                   )
                 )}
-                {section.table && (
-                  <div className="privacy-table-wrap">
-                    <table className="privacy-table">
-                      <thead>
-                        <tr>
-                          {section.table[0].map((cell) => (
-                            <th key={cell}>{cell}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {section.table.slice(1).map((row) => (
-                          <tr key={row[0]}>
-                            {row.map((cell) => (
-                              <td key={cell}>{cell}</td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-                {section.afterTable?.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
               </section>
             ))}
           </div>
 
           <section className="privacy-contact">
-            <h2>12. Fale conosco e encarregado de dados</h2>
+            <h2>11. Fale conosco e encarregado de dados</h2>
             <p>
               Em caso de dúvidas sobre esta política, para exercer seus direitos como titular ou para
               falar com o nosso Encarregado de Dados (DPO), entre em contato:

@@ -1,7 +1,8 @@
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { ArrowRight, ArrowUpRight, Clock } from 'lucide-react';
-import { brl, COURSES, enrollLink, wa, WA_MESSAGE_OFFERS } from '../data';
+import { brl, enrollLink, wa, WA_MESSAGE_OFFERS } from '../data';
 import { useScrollReveal } from '../hooks/useScrollReveal';
+import { useSiteData } from '../lib/siteData';
 import CourseIcon from './CourseIcon';
 
 const FEATURED_NAMES = [
@@ -22,13 +23,24 @@ const FEATURED_DESCRIPTIONS: Record<string, string> = {
   'Inglês do Zero a Fluência': 'Do zero à fluência para conquistar o mundo.',
 };
 
-const FEATURED_COURSES = FEATURED_NAMES.map((name) => COURSES.find((course) => course.name === name)).filter(
-  (course): course is NonNullable<typeof course> => Boolean(course)
-);
-
 export default function Courses() {
   const rootRef = useRef<HTMLElement>(null);
+  const { courses, promos } = useSiteData();
   useScrollReveal(rootRef);
+
+  const featured = useMemo(
+    () =>
+      FEATURED_NAMES.map((name) => courses.find((course) => course.name === name)).filter(
+        (course): course is NonNullable<typeof course> => Boolean(course)
+      ),
+    [courses]
+  );
+
+  const promoByCourse = useMemo(() => {
+    const map = new Map<string, (typeof promos)[number]>();
+    promos.forEach((promo) => map.set(promo.name, promo));
+    return map;
+  }, [promos]);
 
   return (
     <section className="courses section" id="cursos" ref={rootRef}>
@@ -45,32 +57,36 @@ export default function Courses() {
         </div>
 
         <div className="featured-track" data-reveal>
-          {FEATURED_COURSES.map((course) => (
-            <article className="featured-card" key={course.name}>
-              <span className="featured-card-icon" aria-hidden="true">
-                <CourseIcon course={course} />
-              </span>
-              <h3>{course.name}</h3>
-              <p className="featured-card-desc">{FEATURED_DESCRIPTIONS[course.name]}</p>
-              <div className="featured-card-hours">
-                <Clock strokeWidth={2.2} /> {course.hours}h de curso
-              </div>
-              <div className="featured-card-foot">
-                <div className="featured-card-price">
-                  <strong>{brl(course.price)}</strong>
+          {featured.map((course) => {
+            const promo = promoByCourse.get(course.name);
+            return (
+              <article className="featured-card" key={course.name}>
+                <span className="featured-card-icon" aria-hidden="true">
+                  <CourseIcon course={course} />
+                </span>
+                <h3>{course.name}</h3>
+                <p className="featured-card-desc">{FEATURED_DESCRIPTIONS[course.name]}</p>
+                <div className="featured-card-hours">
+                  <Clock strokeWidth={2.2} /> {course.hours}h de curso
                 </div>
-                <a
-                  className="featured-card-link"
-                  href={enrollLink(course.name)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`Matricular-se em ${course.name}`}
-                >
-                  <ArrowUpRight strokeWidth={2.4} />
-                </a>
-              </div>
-            </article>
-          ))}
+                <div className="featured-card-foot">
+                  <div className="featured-card-price">
+                    {promo && <del>{brl(promo.from)}</del>}
+                    <strong>{brl(course.price)}</strong>
+                  </div>
+                  <a
+                    className="featured-card-link"
+                    href={enrollLink(course.name)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Matricular-se em ${course.name}`}
+                  >
+                    <ArrowUpRight strokeWidth={2.4} />
+                  </a>
+                </div>
+              </article>
+            );
+          })}
         </div>
 
         <p className="featured-note" data-reveal>

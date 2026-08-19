@@ -17,6 +17,7 @@ export function brl(value: number): string {
 }
 
 export interface Promo {
+  id?: string;
   name: string;
   hours: number;
   from: number;
@@ -103,6 +104,7 @@ export const COURSE_ICON_FILES: Record<string, string> = {
 };
 
 export interface Course {
+  id?: string;
   name: string;
   category: string;
   hours: number;
@@ -256,8 +258,8 @@ export const KIDS_ICON_FILES: Record<string, string> = {
   'Programação Kids (Scratch)': 'kids-programacao.webp',
 };
 
-export function initialCatalogList(): Course[] {
-  return COURSES.filter((course) => !course.kids);
+export function initialCatalogList(courses: Course[] = COURSES): Course[] {
+  return courses.filter((course) => !course.kids);
 }
 
 export function normalizeText(value: string): string {
@@ -265,15 +267,17 @@ export function normalizeText(value: string): string {
 }
 
 export function getFilteredCourses({
+  courses,
   activeCategory,
   search,
   sort,
 }: {
+  courses: Course[];
   activeCategory: string;
   search: string;
   sort: string;
 }): Course[] {
-  const base = initialCatalogList();
+  const base = initialCatalogList(courses);
   const q = normalizeText(search);
   const filtered = base.filter((course) => {
     const categoryMatch = activeCategory === 'Todos' || course.category === activeCategory;
@@ -288,8 +292,8 @@ export function getFilteredCourses({
   });
 }
 
-export function categoryCounts(): Record<string, number> {
-  const base = initialCatalogList();
+export function categoryCounts(courses: Course[] = COURSES): Record<string, number> {
+  const base = initialCatalogList(courses);
   const counts: Record<string, number> = { Todos: base.length };
   base.forEach((course) => {
     counts[course.category] = (counts[course.category] || 0) + 1;

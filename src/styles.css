@@ -4831,88 +4831,390 @@ p {
 }
 
 /* --------------------------------------------------------------------------
-   Aviso de cookies (LGPD)
+   Catálogo — preço com preço antigo riscado
    -------------------------------------------------------------------------- */
 
-.cookie-consent {
-  position: fixed;
-  left: 50%;
-  bottom: 1.25rem;
-  transform: translateX(-50%);
-  z-index: 1500;
+.price-col {
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
-  gap: 0.9rem;
-  width: min(46rem, calc(100% - 2rem));
-  padding: 1.1rem 1.3rem;
-  background: #ffffff;
+}
+
+.price-col .old-price {
+  margin-bottom: 0.15rem;
+}
+
+/* --------------------------------------------------------------------------
+   Painel de administração
+   -------------------------------------------------------------------------- */
+
+.admin-shell {
+  min-height: 100vh;
+  background: var(--surface);
+}
+
+.admin-card {
+  max-width: 26rem;
+  margin: 0 auto;
+  padding: 2.2rem;
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-2);
-  animation: cookie-in 0.45s var(--ease-out);
+  background: var(--bg);
+  box-shadow: var(--shadow-1);
 }
 
-@keyframes cookie-in {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
+.admin-shell > .admin-card,
+.admin-shell > .admin-message {
+  margin-top: 12vh;
 }
 
-.cookie-consent-icon {
-  display: grid;
-  place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 0.7rem;
-  background: var(--primary-soft);
-  color: var(--primary);
-  flex-shrink: 0;
+.admin-card h2 {
+  margin-top: 0.4rem;
 }
 
-.cookie-consent p {
-  margin: 0;
-  font-size: 0.85rem;
-  line-height: 1.6;
+.admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.6rem;
+}
+
+.admin-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.86rem;
+  font-weight: 600;
   color: var(--muted);
 }
 
-.cookie-consent a {
+.admin-form input {
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  font-size: 0.95rem;
+  transition: border-color 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+}
+
+.admin-form input:focus-visible {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.admin-form .btn {
+  justify-content: center;
+  margin-top: 0.4rem;
+}
+
+.admin-link {
+  display: block;
+  margin-top: 1.1rem;
   color: var(--primary);
-  font-weight: 700;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.admin-link:hover {
   text-decoration: underline;
 }
 
-.cookie-consent-actions {
-  display: flex;
-  gap: 0.55rem;
-  margin-left: auto;
-  flex-shrink: 0;
+.admin-error {
+  margin: 0;
+  color: var(--primary-deep);
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
-.cookie-consent-actions .btn {
-  padding: 0.5rem 0.95rem;
+.admin-message {
+  max-width: 30rem;
+  margin-right: auto;
+  margin-left: auto;
+  color: var(--muted);
+  line-height: 1.7;
+  text-align: center;
+}
+
+.admin-message code {
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.35rem;
+  background: var(--surface-2);
+  font-size: 0.85em;
+}
+
+.admin-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(14px);
+}
+
+.admin-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+.admin-title {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.admin-title > svg {
+  width: 2.1rem;
+  height: 2.1rem;
+  padding: 0.45rem;
+  border-radius: 0.7rem;
+  background: var(--grad-primary);
+  color: #fff;
+}
+
+.admin-title h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.admin-title .eyebrow {
+  margin: 0;
+  font-size: 0.68rem;
+}
+
+.admin-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.admin-session {
+  max-width: 14rem;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.83rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-header-actions .btn {
+  padding: 0.6rem 1rem;
   font-size: 0.82rem;
 }
 
-@media (max-width: 640px) {
-  .cookie-consent {
-    flex-wrap: wrap;
-    bottom: 0.75rem;
+.admin-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2.2rem;
+  padding-top: 2.4rem;
+  padding-bottom: 4rem;
+}
+
+.admin-section {
+  padding: 1.8rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--bg);
+  box-shadow: var(--shadow-1);
+}
+
+.admin-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.admin-section-head h3 {
+  margin: 0.2rem 0 0;
+  font-size: 1.3rem;
+}
+
+.admin-section-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.admin-section-actions .btn {
+  padding: 0.65rem 1rem;
+  font-size: 0.84rem;
+}
+
+.admin-search {
+  width: 15rem;
+}
+
+.admin-table-wrap {
+  margin-top: 1.4rem;
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.admin-table th {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--line-strong);
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.admin-table td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+
+.admin-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.admin-table input[type="text"],
+.admin-table input[type="number"],
+.admin-table select {
+  width: 100%;
+  min-width: 6.5rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  font-size: 0.88rem;
+  transition: border-color 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+}
+
+.admin-table input[type="number"] {
+  min-width: 5.5rem;
+}
+
+.admin-table input:focus-visible,
+.admin-table select:focus-visible {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.admin-table input[type="checkbox"] {
+  width: 1.15rem;
+  height: 1.15rem;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.admin-row-actions {
+  display: flex;
+  gap: 0.4rem;
+  white-space: nowrap;
+}
+
+.admin-icon-btn {
+  display: grid;
+  place-items: center;
+  width: 2.15rem;
+  height: 2.15rem;
+  border-radius: var(--radius-sm);
+  transition: background 0.25s var(--ease-out), color 0.25s var(--ease-out), transform 0.25s var(--ease-out);
+}
+
+.admin-icon-btn svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.admin-icon-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.admin-icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.admin-icon-btn.save {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.admin-icon-btn.save:hover:not(:disabled) {
+  background: var(--grad-primary);
+  color: #fff;
+}
+
+.admin-icon-btn.danger {
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.admin-icon-btn.danger:hover:not(:disabled) {
+  background: var(--primary-deep);
+  color: #fff;
+}
+
+.admin-status {
+  margin: 1rem 0 0;
+  padding: 0.7rem 1rem;
+  border-radius: var(--radius-sm);
+  background: var(--primary-soft);
+  color: var(--primary-deep);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.admin-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 1.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.admin-hint svg {
+  width: 1rem;
+  height: 1rem;
+  color: var(--primary);
+}
+
+@media (max-width: 860px) {
+  .admin-header-row {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
-  .cookie-consent-actions {
+  .admin-header-actions {
     width: 100%;
-    margin-left: 0;
+    flex-wrap: wrap;
   }
 
-  .cookie-consent-actions .btn {
-    flex: 1;
-    justify-content: center;
+  .admin-session {
+    width: 100%;
+    max-width: none;
+  }
+
+  .admin-section-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-section-actions,
+  .admin-search {
+    width: 100%;
   }
 }
 }
