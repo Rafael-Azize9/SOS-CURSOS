@@ -1349,18 +1349,31 @@ p {
 
 .promo-card-icon {
   display: inline-flex;
-  width: 3.4rem;
-  height: 3.4rem;
+  width: 3.6rem;
+  height: 3.6rem;
 }
 
-.promo-card-icon img {
+.course-card .promo-card-icon img {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  padding: 0.4rem;
+}
+
+.promo-grid .course-card {
+  border-color: color-mix(in srgb, var(--primary) 26%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--primary) 5%, var(--bg)), var(--bg) 55%);
+  box-shadow: var(--shadow-1);
+}
+
+.promo-grid .course-card .course-card-icon {
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface-2));
 }
 
 .promo-grid .course-card h3 {
-  margin-top: 1rem;
+  margin-top: 0.4rem;
+  max-width: calc(100% - 4.5rem);
+  min-height: 0;
 }
 
 .course-card h3 {

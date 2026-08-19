@@ -92,7 +92,7 @@ export default function Wheel() {
   const [spinning, setSpinning] = useState(false);
   const [prize, setPrize] = useState<WheelSegment | null>(null);
   const [confetti, setConfetti] = useState<ConfettiPiece[]>([]);
-  const wheelRef = useRef<SVGGElement>(null);
+  const wheelRef = useRef<SVGSVGElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const rotationRef = useRef(0);
   const spinCount = useRef(0);
@@ -148,7 +148,7 @@ export default function Wheel() {
     const spins = 5 + Math.floor(Math.random() * 3);
     const delta = spins * 360 + (360 - (index * SEG_ANGLE + SEG_ANGLE / 2));
     const finalRotation = rotationRef.current + delta;
-    const overshoot = finalRotation + 16;
+    const overshoot = finalRotation + 6;
     const duration = 4.4 + spins * 0.3;
     rotationRef.current = finalRotation;
     setSpinning(true);
@@ -161,7 +161,7 @@ export default function Wheel() {
     });
     timeline
       .to(wheelRef.current, { rotation: overshoot, duration, ease: 'power4.out' })
-      .to(wheelRef.current, { rotation: finalRotation, duration: 0.9, ease: 'elastic.out(1, 0.35)' });
+      .to(wheelRef.current, { rotation: finalRotation, duration: 0.8, ease: 'back.out(1.6)' });
     gsap.fromTo(
       stageRef.current,
       { scale: 1 },
@@ -281,8 +281,10 @@ export default function Wheel() {
             viewBox={`0 0 ${WHEEL_SIZE} ${WHEEL_SIZE}`}
             role="img"
             aria-label="Roleta de descontos de 5 a 35 por cento"
+            ref={wheelRef}
+            style={{ transformOrigin: '50% 50%' }}
           >
-            <g ref={wheelRef} style={{ transformOrigin: '50% 50%' }}>
+            <g>
               {SEGMENTS.map((_, index) => (
                 <path
                   key={index}
