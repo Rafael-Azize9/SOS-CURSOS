@@ -41,6 +41,7 @@ export default function Preloader({ onComplete }: PreloaderProps) {
     return () => {
       window.clearTimeout(minDelay);
       window.removeEventListener('load', done);
+      root.classList.remove('is-loading');
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

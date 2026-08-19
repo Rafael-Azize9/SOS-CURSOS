@@ -68,6 +68,7 @@ export default function AdminPanel() {
   const [passwordMsg, setPasswordMsg] = useState('');
 
   useEffect(() => {
+    document.documentElement.classList.remove('is-loading');
     if (!supabase) {
       setChecking(false);
       return;
