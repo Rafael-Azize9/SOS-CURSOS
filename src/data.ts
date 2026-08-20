@@ -1,11 +1,9 @@
-const WHATSAPP_DIGITS = [5, 5, 8, 8, 9, 9, 6, 9, 9, 6, 0, 8, 5];
-
-function whatsappNumber(): string {
-  return WHATSAPP_DIGITS.join('');
+function getWhatsAppNumber(): string {
+  return import.meta.env.VITE_WHATSAPP_NUMBER || '5588996996085';
 }
 
 export function wa(message: string): string {
-  return `https://wa.me/${whatsappNumber()}?text=${encodeURIComponent(message)}`;
+  return `https://wa.me/${getWhatsAppNumber()}?text=${encodeURIComponent(message)}`;
 }
 
 export function enrollLink(courseName: string): string {
@@ -31,6 +29,14 @@ export const PROMOS: Promo[] = [
   { name: 'Marketing Digital', hours: 20, from: 89.9, price: 69.9, icon: 'promo-icon-megafone.webp' },
   { name: 'Programação para Iniciantes', hours: 20, from: 89.9, price: 69.9, icon: 'promo-icon-codigo.webp' },
   { name: 'Inglês do Zero a Fluência', hours: 100, from: 129.9, price: 99.9, icon: 'promo-icon-chat.webp' },
+];
+
+export const PROMO_ICON_OPTIONS = [
+  'promo-icon-excel.webp',
+  'promo-icon-celular.webp',
+  'promo-icon-megafone.webp',
+  'promo-icon-codigo.webp',
+  'promo-icon-chat.webp',
 ];
 
 export interface Step {
@@ -266,6 +272,26 @@ export function normalizeText(value: string): string {
   return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
 
+export function formatCourseSlug(name: string): string {
+  return normalizeText(name).replace(/\s+/g, '-');
+}
+
+const COURSE_DESCRIPTIONS: Record<string, string> = {
+  'Excel Básico e Avançado': 'Do básico ao avançado e torne-se um especialista.',
+  'Inglês do Zero a Fluência': 'Do zero à fluência para conquistar o mundo.',
+  'Marketing Digital': 'Domine as estratégias digitais e aumente suas vendas.',
+  'Programação para Iniciantes': 'Aprenda a programar do zero e crie seus projetos.',
+  'Manutenção de Celular': 'Repare celulares e abra seu próprio negócio.',
+  'Microsoft Word': 'Domine o Word e crie documentos profissionais.',
+  'Power Point': 'Crie apresentações incríveis e impactantes.',
+  'PhotoShop CC': 'Edição, manipulação e criação de artes incríveis.',
+  'Power Bi': 'Transforme dados em informações estratégicas.',
+};
+
+export function courseDescription(name: string): string {
+  return COURSE_DESCRIPTIONS[name] ?? 'Curso completo com certificado válido em todo o Brasil.';
+}
+
 export function getFilteredCourses({
   courses,
   activeCategory,
@@ -315,12 +341,12 @@ export interface NavLink {
 }
 
 export const NAV_LINKS: NavLink[] = [
-  { label: 'Início', href: '#topo' },
-  { label: 'Cursos', href: '#cursos' },
-  { label: 'Planos', href: '#catalogo' },
-  { label: 'Certificados', href: '#certificado' },
-  { label: 'Depoimentos', href: '#depoimentos' },
-  { label: 'Contato', href: '#contato' },
+  { label: 'Início', href: '/' },
+  { label: 'Cursos', href: '/catalogo' },
+  { label: 'Planos', href: '/planos' },
+  { label: 'Certificados', href: '/#certificado' },
+  { label: 'Depoimentos', href: '/#depoimentos' },
+  { label: 'Contato', href: '/#contato' },
 ];
 
 export interface StatItem {
@@ -342,27 +368,60 @@ export interface Testimonial {
   course: string;
   initials: string;
   comment: string;
+  rating: number;
+  avatar?: string;
+  date?: string;
 }
 
 export const TESTIMONIALS: Testimonial[] = [
   {
-    name: 'Maria Fernanda',
-    course: 'Aluna de Excel',
+    name: 'Maria Fernanda Silva',
+    course: 'Excel Básico e Avançado',
     initials: 'MF',
     comment:
-      'O curso de Excel mudou completamente minha vida profissional. Hoje consigo fazer análises incríveis!',
+      'O curso de Excel mudou completamente minha vida profissional. Hoje consigo fazer análises incríveis, tabelas dinâmicas e dashboards que impressionam meu chefe. Vale cada centavo!',
+    rating: 5,
+    date: '2024-11-15',
   },
   {
-    name: 'João Pedro',
-    course: 'Aluno de PowerPoint',
+    name: 'João Pedro Santos',
+    course: 'Power Point',
     initials: 'JP',
-    comment: 'As aulas são muito didáticas e práticas. Recomendo demais para todos!',
+    comment: 'As aulas são muito didáticas e práticas. Consegui criar apresentações profissionais para minha defesa de TCC e passei com nota máxima. Recomendo demais para todos!',
+    rating: 5,
+    date: '2024-10-22',
   },
   {
-    name: 'Amanda Souza',
-    course: 'Aluna de Photoshop',
+    name: 'Amanda Souza Lima',
+    course: 'PhotoShop CC',
     initials: 'AS',
-    comment: 'Aprendi do zero e hoje já trabalho com edição de imagens. Cursos top demais!',
+    comment: 'Aprendi do zero e hoje já trabalho com edição de imagens para e-commerce. O suporte no WhatsApp é rápido e tira todas as dúvidas. Cursos top demais!',
+    rating: 5,
+    date: '2024-09-08',
+  },
+  {
+    name: 'Carlos Eduardo Rocha',
+    course: 'Inglês do Zero a Fluência',
+    initials: 'CE',
+    comment: 'Nunca tinha estudado inglês sério. Em 6 meses já consigo assistir séries sem legenda e me comunicar em viagens. A metodologia é excelente!',
+    rating: 5,
+    date: '2024-12-01',
+  },
+  {
+    name: 'Patrícia Alves',
+    course: 'Marketing Digital',
+    initials: 'PA',
+    comment: 'Consegui meu primeiro cliente freelancer antes mesmo de terminar o curso. O módulo de tráfego pago é ouro puro. Já recuperei o investimento 10x.',
+    rating: 5,
+    date: '2024-08-30',
+  },
+  {
+    name: 'Ricardo Mendes',
+    course: 'Manutenção de Celular',
+    initials: 'RM',
+    comment: 'Abri minha própria assistência técnica depois desse curso. O conteúdo de hardware + software é completo. Hoje faturo R$ 8k/mês só com reparos.',
+    rating: 5,
+    date: '2024-07-18',
   },
 ];
 
@@ -390,3 +449,12 @@ export const CONTACT = {
   email: 'cursos.sos@outlook.com',
   hours: 'Seg - Sex: 08h às 18h',
 };
+
+export const ADMIN_USERNAME = 'admin.azize';
+export const ADMIN_EMAIL = 'admin.azize@soscursos.com';
+export const MAX_LOGIN_ATTEMPTS = 5;
+export const LOCK_SECONDS = 60;
+
+export function isAdminEmail(email: string | null): boolean {
+  return email?.toLowerCase() === ADMIN_EMAIL;
+}

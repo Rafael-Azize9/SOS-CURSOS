@@ -1,13 +1,16 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
 import './styles.css';
 import App from './App';
 import { SiteDataProvider } from './lib/siteData';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <SiteDataProvider>
-      <App />
-    </SiteDataProvider>
+    <BrowserRouter>
+      <SiteDataProvider>
+        <App />
+      </SiteDataProvider>
+    </BrowserRouter>
   </StrictMode>
 );

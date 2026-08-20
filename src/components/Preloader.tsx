@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { gsap } from '../lib/gsap';
 
 interface PreloaderProps {
-  onComplete: () => void;
+  onComplete?: () => void;
 }
 
-export default function Preloader({ onComplete }: PreloaderProps) {
+export default function Preloader({ onComplete = () => {} }: PreloaderProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const finished = useRef(false);
   const [removed, setRemoved] = useState(false);

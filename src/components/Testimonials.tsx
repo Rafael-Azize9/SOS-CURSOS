@@ -1,9 +1,9 @@
 import { useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, Quote, Star } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Quote, Star, Calendar } from 'lucide-react';
 import { TESTIMONIALS } from '../data';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 
-const AVATAR_COLORS = ['#e63946', '#f4a261', '#2a9d8f'];
+const AVATAR_COLORS = ['#e63946', '#f4a261', '#2a9d8f', '#e76f51', '#264653', '#8ecae6'];
 
 export default function Testimonials() {
   const rootRef = useRef<HTMLElement>(null);
@@ -55,9 +55,14 @@ export default function Testimonials() {
             >
               <Quote className="testimonial-quote" strokeWidth={1.6} aria-hidden="true" />
               <p className="testimonial-comment">“{testimonial.comment}”</p>
-              <div className="testimonial-stars" aria-label="Avaliação 5 de 5 estrelas">
+              <div className="testimonial-stars" aria-label={`Avaliação ${testimonial.rating} de 5 estrelas`}>
                 {Array.from({ length: 5 }).map((_, starIndex) => (
-                  <Star key={starIndex} strokeWidth={0} fill="currentColor" />
+                  <Star
+                    key={starIndex}
+                    strokeWidth={starIndex < testimonial.rating ? 0 : 2}
+                    fill={starIndex < testimonial.rating ? 'currentColor' : 'none'}
+                    className={starIndex < testimonial.rating ? 'filled' : ''}
+                  />
                 ))}
               </div>
               <div className="testimonial-person">
@@ -67,6 +72,11 @@ export default function Testimonials() {
                 <div>
                   <strong>{testimonial.name}</strong>
                   <p>{testimonial.course}</p>
+                  {testimonial.date && (
+                    <time className="testimonial-date" dateTime={testimonial.date}>
+                      <Calendar strokeWidth={2} size={12} /> {new Date(testimonial.date).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
+                    </time>
+                  )}
                 </div>
               </div>
             </article>
