@@ -36,3 +36,10 @@ Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.[39m
 [2m22:51:50[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/styles.css[22m
 [2m22:51:56[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/styles.css[22m
 [2m22:52:10[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[2m23:18:24[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+[2m23:18:24[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m Re-optimizing dependencies because lockfile has changed
+[2m23:18:24[22m [36m[1m[vite][22m[39m server restarted.
+[2m23:18:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [optimizer] bundling dependencies...
+[2m23:24:41[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/Catalog.tsx[22m
+[2m23:24:45[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/Footer.tsx[22m
+[2m23:24:57[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/styles.css[22m

@@ -201,9 +201,9 @@ export default function Catalog() {
               <ArrowRight strokeWidth={2.4} />
             </button>
           )}
-          <a className="btn btn-outline" href="#roleta">
+          <Link className="btn btn-outline" to="/roleta">
             <Gift strokeWidth={2.4} /> Roleta Premiada — até 35% OFF
-          </a>
+          </Link>
         </div>
       </div>
     </section>

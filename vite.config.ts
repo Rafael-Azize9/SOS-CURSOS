@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import sitemapPlugin from 'vite-plugin-sitemap';
-import { COURSES } from './src/data';
+import { COURSES } from './src/data.ts';
 
 const SUPABASE_URL = 'https://*.supabase.co';
 

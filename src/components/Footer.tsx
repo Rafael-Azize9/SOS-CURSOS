@@ -190,6 +190,9 @@ export default function Footer() {
 
         <div className="footer-bottom">
           <p>&copy; 2026 S.O.S Cursos. Todos os direitos reservados.</p>
+          <Link to="/admin" className="footer-admin-link">
+            Área do administrador
+          </Link>
         </div>
       </div>
     </footer>

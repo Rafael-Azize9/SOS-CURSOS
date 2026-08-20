@@ -1,0 +1,1 @@
+import{t as e}from"./Catalog-eT4jcMTW.js";import{I as t}from"./index-BojkNf2b.js";var n=t();function r(){return(0,n.jsx)(e,{})}export{r as default};
