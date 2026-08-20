@@ -1,8 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { ADMIN_USERNAME, ADMIN_EMAIL, isAdminEmail, MAX_LOGIN_ATTEMPTS, LOCK_SECONDS } from '../data';
-import { supabase, type Session } from '../lib/supabase';
+import { ADMIN_USERNAME, ADMIN_EMAIL, ADMIN_PASSWORD, MAX_LOGIN_ATTEMPTS, LOCK_SECONDS } from '../data';
+import { supabase } from '../lib/supabase';
 import { useSiteData } from '../lib/siteData';
 import AdminHeader from './admin/AdminHeader';
 import StatsRow from './admin/StatsRow';
@@ -14,6 +14,32 @@ import PasswordForm from './admin/PasswordForm';
 
 interface AdminSession {
   email: string | null;
+}
+
+const SESSION_KEY = 'sos_admin_session';
+
+function readLocalSession(): boolean {
+  try {
+    return window.sessionStorage.getItem(SESSION_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function writeLocalSession(): void {
+  try {
+    window.sessionStorage.setItem(SESSION_KEY, '1');
+  } catch {
+    // sessão não persiste, login continua válido para a aba atual
+  }
+}
+
+function clearLocalSession(): void {
+  try {
+    window.sessionStorage.removeItem(SESSION_KEY);
+  } catch {
+    // ignorar
+  }
 }
 
 export default function AdminPanel() {
@@ -30,42 +56,13 @@ export default function AdminPanel() {
 
   useEffect(() => {
     document.documentElement.classList.remove('is-loading');
-    if (!supabase) {
-      setChecking(false);
-      return;
-    }
-    const client = supabase;
-    client.auth.getSession().then(({ data: sessionData }) => {
-      const sessionEmail = sessionData.session?.user?.email ?? null;
-      if (!isAdminEmail(sessionEmail)) {
-        client.auth.signOut();
-        setSessionState(null);
-      } else {
-        setSessionState({ email: sessionEmail });
-      }
-      setChecking(false);
-    });
-    const { data: subscription } = client.auth.onAuthStateChange((_event: string, currentSession: Session | null) => {
-      if (!currentSession) {
-        setSessionState(null);
-        return;
-      }
-      const sessionEmail = currentSession.user?.email ?? null;
-      if (!isAdminEmail(sessionEmail)) {
-        client.auth.signOut();
-        setSessionState(null);
-        setAuthError('Acesso restrito ao administrador.');
-        return;
-      }
-      setSessionState({ email: sessionEmail });
-    });
-    return () => subscription.subscription.unsubscribe();
+    setSessionState(readLocalSession() ? { email: ADMIN_EMAIL } : null);
+    setChecking(false);
   }, []);
 
-  const handleAuth = async (event: FormEvent) => {
+  const handleAuth = (event: FormEvent) => {
     event.preventDefault();
     setAuthError('');
-    if (!supabase) return;
     if (Date.now() < lockUntil) {
       setAuthError(`Muitas tentativas. Aguarde ${Math.ceil((lockUntil - Date.now()) / 1000)} segundos.`);
       return;
@@ -74,8 +71,7 @@ export default function AdminPanel() {
       setAuthError('Usuário inválido.');
       return;
     }
-    const { error } = await supabase.auth.signInWithPassword({ email: ADMIN_EMAIL, password });
-    if (error) {
+    if (password !== ADMIN_PASSWORD) {
       const next = failCount + 1;
       setFailCount(next);
       if (next >= MAX_LOGIN_ATTEMPTS) {
@@ -83,16 +79,17 @@ export default function AdminPanel() {
         setFailCount(0);
         setAuthError(`Muitas tentativas de login. Aguarde ${LOCK_SECONDS} segundos.`);
       } else {
-        setAuthError(`${error.message} (tentativa ${next} de ${MAX_LOGIN_ATTEMPTS})`);
+        setAuthError(`Senha inválida (tentativa ${next} de ${MAX_LOGIN_ATTEMPTS})`);
       }
       return;
     }
     setFailCount(0);
+    writeLocalSession();
+    setSessionState({ email: ADMIN_EMAIL });
   };
 
-  const handleSignOut = async () => {
-    if (!supabase) return;
-    await supabase.auth.signOut();
+  const handleSignOut = () => {
+    clearLocalSession();
     setSessionState(null);
     navigate('/');
   };

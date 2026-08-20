@@ -1,0 +1,1 @@
+import{t as e}from"./Catalog-CKhVr_vY.js";import{I as t}from"./index-DXvnp12t.js";var n=t();function r(){return(0,n.jsx)(e,{})}export{r as default};

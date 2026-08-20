@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Allow: /catalogo
+Allow: /curso/
+Allow: /roleta
+Allow: /privacidade
+Disallow: /admin
+
+Sitemap: https://soscursos.com.br/sitemap.xml
