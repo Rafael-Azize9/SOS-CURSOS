@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { ADMIN_USERNAME, ADMIN_EMAIL, ADMIN_PASSWORD, MAX_LOGIN_ATTEMPTS, LOCK_SECONDS } from '../data';
+import { ADMIN_PASSWORD, MAX_LOGIN_ATTEMPTS, LOCK_SECONDS } from '../data';
 import { supabase } from '../lib/supabase';
 import { useSiteData } from '../lib/siteData';
 import AdminHeader from './admin/AdminHeader';
@@ -11,10 +11,6 @@ import BackupManager from './admin/BackupManager';
 import CoursesTable from './admin/CoursesTable';
 import PromosTable from './admin/PromosTable';
 import PasswordForm from './admin/PasswordForm';
-
-interface AdminSession {
-  email: string | null;
-}
 
 const SESSION_KEY = 'sos_admin_session';
 
@@ -45,9 +41,8 @@ function clearLocalSession(): void {
 export default function AdminPanel() {
   const { reload } = useSiteData();
   const navigate = useNavigate();
-  const [sessionState, setSessionState] = useState<AdminSession | null>(null);
+  const [authenticated, setAuthenticated] = useState(false);
   const [checking, setChecking] = useState(true);
-  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
   const [failCount, setFailCount] = useState(0);
@@ -56,7 +51,7 @@ export default function AdminPanel() {
 
   useEffect(() => {
     document.documentElement.classList.remove('is-loading');
-    setSessionState(readLocalSession() ? { email: ADMIN_EMAIL } : null);
+    setAuthenticated(readLocalSession());
     setChecking(false);
   }, []);
 
@@ -65,10 +60,6 @@ export default function AdminPanel() {
     setAuthError('');
     if (Date.now() < lockUntil) {
       setAuthError(`Muitas tentativas. Aguarde ${Math.ceil((lockUntil - Date.now()) / 1000)} segundos.`);
-      return;
-    }
-    if (username.trim().toLowerCase() !== ADMIN_USERNAME) {
-      setAuthError('Usuário inválido.');
       return;
     }
     if (password !== ADMIN_PASSWORD) {
@@ -85,12 +76,12 @@ export default function AdminPanel() {
     }
     setFailCount(0);
     writeLocalSession();
-    setSessionState({ email: ADMIN_EMAIL });
+    setAuthenticated(true);
   };
 
   const handleSignOut = () => {
     clearLocalSession();
-    setSessionState(null);
+    setAuthenticated(false);
     navigate('/');
   };
 
@@ -125,7 +116,7 @@ export default function AdminPanel() {
     );
   }
 
-  if (!sessionState) {
+  if (!authenticated) {
     return (
       <div className="admin-shell">
         <div className="admin-card">
@@ -133,17 +124,6 @@ export default function AdminPanel() {
           <h2>Entrar</h2>
           <p className="admin-login-note">Acesso restrito ao administrador do site.</p>
           <form className="admin-form" onSubmit={handleAuth}>
-            <label>
-              Usuário
-              <input
-                type="text"
-                required
-                autoComplete="username"
-                value={username}
-                onChange={(event) => setUsername(event.target.value)}
-                placeholder="admin.azize"
-              />
-            </label>
             <label>
               Senha
               <input

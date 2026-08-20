@@ -61,12 +61,12 @@ export default defineConfig({
     sitemapPlugin({
       hostname: 'https://soscursos.com.br',
       dynamicRoutes: courseUrls.map(u => u.url),
-      exclude: ['/admin'],
+      exclude: ['/painel-sos'],
       robots: [
         {
           userAgent: '*',
           allow: ['/', '/catalogo', '/curso/', '/roleta', '/privacidade'],
-          disallow: ['/admin'],
+          disallow: ['/painel-sos'],
         },
       ],
       changefreq: 'weekly',
@@ -86,5 +86,13 @@ export default defineConfig({
   },
   preview: {
     headers: { ...SECURITY_HEADERS, 'Content-Security-Policy': CSP },
+  },
+  build: {
+    rolldownOptions: {
+      output: {
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[hash].js',
+      },
+    },
   },
 });

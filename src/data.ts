@@ -450,12 +450,6 @@ export const CONTACT = {
   hours: 'Seg - Sex: 08h às 18h',
 };
 
-export const ADMIN_USERNAME = 'admin.azize';
-export const ADMIN_EMAIL = 'admin.azize@soscursos.com';
 export const ADMIN_PASSWORD = 'azizesos';
 export const MAX_LOGIN_ATTEMPTS = 5;
 export const LOCK_SECONDS = 60;
-
-export function isAdminEmail(email: string | null): boolean {
-  return email?.toLowerCase() === ADMIN_EMAIL;
-}

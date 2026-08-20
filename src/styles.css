@@ -3215,17 +3215,6 @@ p {
   margin: 0;
 }
 
-.footer-admin-link {
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 0.78rem;
-  text-decoration: none;
-  transition: color 0.25s var(--ease-out);
-}
-
-.footer-admin-link:hover {
-  color: rgba(255, 255, 255, 0.75);
-}
-
 .footer-instagram {
   display: inline-flex;
   align-items: center;

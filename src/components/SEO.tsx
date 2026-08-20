@@ -56,7 +56,7 @@ export default function SEO() {
     const isCatalog = path === '/catalogo' || path === '/planos';
     const isCourse = path.startsWith('/curso/');
     const isWheel = path === '/roleta';
-    const isAdmin = path === '/admin';
+    const isAdmin = path === '/painel-sos';
     const isPrivacy = path === '/privacidade';
 
     let title = `${SITE_NAME} — Cursos online com certificado`;
@@ -122,7 +122,7 @@ export default function SEO() {
       title = `Roleta Premiada — Até 35% OFF — ${SITE_NAME}`;
       description = 'Gire a roleta e ganhe até 35% de desconto em qualquer curso. Uma girada por sessão, prêmio garantido via WhatsApp.';
     } else if (isAdmin) {
-      title = `Painel Administrativo — ${SITE_NAME}`;
+      title = `Painel — ${SITE_NAME}`;
       description = 'Área restrita para gestão de cursos, preços e promoções.';
       setMetaTag('robots', 'noindex, nofollow');
     } else if (isPrivacy) {

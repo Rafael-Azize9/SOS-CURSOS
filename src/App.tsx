@@ -96,7 +96,7 @@ export default function App() {
           <Route path="/curso/:slug" element={<PublicRoute><CourseDetail /></PublicRoute>} />
           <Route path="/roleta" element={<PublicRoute><Wheel /></PublicRoute>} />
           <Route path="/privacidade" element={<PublicRoute><Privacy /></PublicRoute>} />
-          <Route path="/admin" element={<PrivateRoute><AdminPanel /></PrivateRoute>} />
+          <Route path="/painel-sos" element={<PrivateRoute><AdminPanel /></PrivateRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

@@ -25,7 +25,7 @@ export default function AdminHeader({
           </div>
         </div>
         <div className="admin-header-actions">
-          <span className="admin-session">Conectado: admin.azize</span>
+          <span className="admin-session">Sessão administrativa ativa</span>
           <button
             type="button"
             className="btn btn-outline"
