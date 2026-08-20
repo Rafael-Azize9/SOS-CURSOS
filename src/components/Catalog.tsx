@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, Gift, Search, Tag, Timer } from 'lucide-react';
-import { brl, CATEGORIES, categoryCounts, enrollLink, getFilteredCourses, PAGE_SIZE } from '../data';
+import { Link } from 'react-router-dom';
+import { ArrowRight, ArrowUpRight, Clock, Gift, Search } from 'lucide-react';
+import { brl, CATEGORIES, categoryCounts, courseDescription, enrollLink, formatCourseSlug, getFilteredCourses, PAGE_SIZE } from '../data';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { useSpotlight } from '../hooks/useSpotlight';
 import { useSiteData } from '../lib/siteData';
@@ -74,46 +75,36 @@ export default function Catalog() {
             <div className="promo-grid" data-reveal>
               {promos.map((promo) => (
                 <article className="course-card" key={promo.id ?? promo.name}>
-                  <div className="course-card-head">
-                    <span className="course-card-icon promo-card-icon">
-                      {promo.icon ? (
-                        <img
-                          className="course-icon"
-                          src={`/assets/${promo.icon}`}
-                          alt=""
-                          width="128"
-                          height="128"
-                          loading="lazy"
-                          decoding="async"
-                        />
-                      ) : (
-                        <Tag aria-hidden="true" strokeWidth={2} />
-                      )}
-                    </span>
-                    <div className="course-card-head-text">
-                      <div className="promo-card-head-line">
-                        <p className="eyebrow course-category">Oferta</p>
-                        <span className="offer-tag offer-tag-inline">Promo</span>
-                      </div>
-                      <h3>{promo.name}</h3>
-                    </div>
+                  <span className="course-card-icon" aria-hidden="true">
+                    <CourseIcon course={promo} />
+                  </span>
+                  <Link to={`/curso/${formatCourseSlug(promo.name)}`} className="course-card-title-link">
+                    <h3 className="course-card-title">{promo.name}</h3>
+                  </Link>
+                  <p className="course-card-desc">{courseDescription(promo.name)}</p>
+                  <div className="course-card-hours">
+                    <Clock strokeWidth={2} /> {promo.hours}h de curso
                   </div>
-                  <div className="meta">
-                    <Timer strokeWidth={2.2} /> {promo.hours}h de curso
-                  </div>
-                  <div className="price-row">
-                    <div className="price-col">
-                      <del className="old-price">{brl(promo.from)}</del>
-                      <span className="price">{brl(promo.price)}</span>
+                  <div className="course-card-divider" aria-hidden="true" />
+                  <div className="course-card-footer">
+                    <div className="course-card-price">
+                      <del>{brl(promo.from)}</del>
+                      <strong>{brl(promo.price)}</strong>
                     </div>
-                    <a
-                      className="matricular"
-                      href={enrollLink(promo.name)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Matricular-se <ArrowRight strokeWidth={2.2} />
-                    </a>
+                    <div className="course-card-actions">
+                      <Link to={`/curso/${formatCourseSlug(promo.name)}`} className="btn-details">
+                        Ver detalhes
+                      </Link>
+                      <a
+                        className="btn-enroll"
+                        href={enrollLink(promo.name)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`Matricular-se em ${promo.name}`}
+                      >
+                        <ArrowUpRight strokeWidth={2.4} /> Matricular-se
+                      </a>
+                    </div>
                   </div>
                 </article>
               ))}
@@ -165,34 +156,39 @@ export default function Catalog() {
         <div className="catalog-grid" id="catalog-grid">
           {visible.map((course) => {
             const promo = promoByCourse.get(course.name);
+            const slug = formatCourseSlug(course.name);
             return (
               <article className="course-card" data-reveal key={course.name}>
-                {promo && <span className="offer-tag">Promo</span>}
-                <div className="course-card-head">
-                  <span className="course-card-icon">
-                    <CourseIcon course={course} />
-                  </span>
-                  <div className="course-card-head-text">
-                    <p className="eyebrow course-category">{course.category}</p>
-                    <h3>{course.name}</h3>
-                  </div>
+                <span className="course-card-icon" aria-hidden="true">
+                  <CourseIcon course={course} />
+                </span>
+                <Link to={`/curso/${slug}`} className="course-card-title-link">
+                  <h3 className="course-card-title">{course.name}</h3>
+                </Link>
+                <p className="course-card-desc">{courseDescription(course.name)}</p>
+                <div className="course-card-hours">
+                  <Clock strokeWidth={2} /> {course.hours}h de curso
                 </div>
-                <div className="meta">
-                  <Timer strokeWidth={2.2} /> {course.hours}h de curso
-                </div>
-                <div className="price-row">
-                  <div className="price-col">
-                    {promo && <del className="old-price">{brl(promo.from)}</del>}
-                    <span className="price">{brl(course.price)}</span>
+                <div className="course-card-divider" aria-hidden="true" />
+                <div className="course-card-footer">
+                  <div className="course-card-price">
+                    {promo && <del>{brl(promo.from)}</del>}
+                    <strong>{brl(course.price)}</strong>
                   </div>
-                  <a
-                    className="matricular"
-                    href={enrollLink(course.name)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Matricular-se <ArrowRight strokeWidth={2.2} />
-                  </a>
+                  <div className="course-card-actions">
+                    <Link to={`/curso/${slug}`} className="btn-details">
+                      Ver detalhes
+                    </Link>
+                    <a
+                      className="btn-enroll"
+                      href={enrollLink(course.name)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Matricular-se em ${course.name}`}
+                    >
+                      <ArrowUpRight strokeWidth={2.4} /> Matricular-se
+                    </a>
+                  </div>
                 </div>
               </article>
             );

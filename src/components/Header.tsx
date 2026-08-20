@@ -1,11 +1,22 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { NAV_LINKS, wa, WA_MESSAGE_START } from '../data';
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<string | null>(null);
   const navRef = useRef<HTMLElement>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const routeLinks = useMemo(() => NAV_LINKS.filter((link) => !link.href.startsWith('/#')), []);
+
+  const activeHref = useMemo(() => {
+    const matched = routeLinks.find((link) => location.pathname === link.href);
+    return matched?.href ?? null;
+  }, [routeLinks, location.pathname]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -35,58 +46,66 @@ export default function Header() {
     return () => document.removeEventListener('keydown', onKey);
   }, [menuOpen]);
 
-  useEffect(() => {
-    const links = document.querySelectorAll('.nav-links a[href^="#"], .mobile-menu a[href^="#"]');
-    if (!links.length || !('IntersectionObserver' in window)) return;
-
-    const sections = Array.from(links)
-      .map((link) => document.querySelector(link.getAttribute('href') ?? ''))
-      .filter((el): el is Element => Boolean(el));
-
-    const setActive = (id: string) => {
-      links.forEach((link) => {
-        link.classList.toggle('nav-active', link.getAttribute('href') === `#${id}`);
-      });
-    };
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-        if (visible[0]) setActive(visible[0].target.id);
-      },
-      { rootMargin: '-45% 0px -50% 0px', threshold: [0, 0.25, 0.5, 0.75, 1] }
-    );
-
-    sections.forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
-  }, []);
-
   const openSearch = () => {
     setMenuOpen(false);
-    document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth' });
-    window.setTimeout(() => {
+    setActiveSection(null);
+    navigate('/catalogo');
+    setTimeout(() => {
       document.getElementById('catalog-search')?.focus();
-    }, 700);
+    }, 100);
   };
 
   const closeMenu = () => setMenuOpen(false);
 
+  const handleNavClick = (href: string) => {
+    if (href.startsWith('/#')) {
+      const id = href.slice(2);
+      setActiveSection(id);
+      const target = document.getElementById(id);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        navigate('/');
+        setTimeout(() => {
+          document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+        }, 200);
+      }
+    }
+    closeMenu();
+  };
+
   return (
     <header className={`site-header${scrolled ? ' scrolled' : ''}`} id="topo">
       <nav className="nav container" ref={navRef} aria-label="Menu principal">
-        <a href="#topo" className="brand" aria-label="S.O.S Cursos início">
+        <Link to="/" className="brand" aria-label="S.O.S Cursos início">
           <span className="brand-badge">SOS</span>
           <span className="brand-text">
             S.O.S <strong>CURSOS</strong>
           </span>
-        </a>
+        </Link>
 
         <ul className="nav-links" aria-label="Navegação do site">
           {NAV_LINKS.map((link) => (
-            <li key={link.href}>
-              <a href={link.href}>{link.label}</a>
+            <li key={link.label}>
+              {link.href.startsWith('/#') ? (
+                <a
+                  href={link.href}
+                  className={`nav-link${activeSection === link.href.slice(2) ? ' nav-active' : ''}`}
+                  aria-current={activeSection === link.href.slice(2) ? 'true' : undefined}
+                  onClick={(e) => { e.preventDefault(); handleNavClick(link.href); }}
+                >
+                  {link.label}
+                </a>
+              ) : (
+                <Link
+                  to={link.href}
+                  className={`nav-link${!activeSection && activeHref === link.href ? ' nav-active' : ''}`}
+                  aria-current={!activeSection && activeHref === link.href ? 'page' : undefined}
+                  onClick={() => { setActiveSection(null); closeMenu(); }}
+                >
+                  {link.label}
+                </Link>
+              )}
             </li>
           ))}
         </ul>
@@ -122,10 +141,26 @@ export default function Header() {
       <div className={`mobile-menu${menuOpen ? ' open' : ''}`} id="mobile-menu" aria-label="Menu móvel">
         <ul>
           {NAV_LINKS.map((link) => (
-            <li key={link.href}>
-              <a href={link.href} onClick={closeMenu}>
-                {link.label}
-              </a>
+            <li key={link.label}>
+              {link.href.startsWith('/#') ? (
+                <a
+                  href={link.href}
+                  className={`nav-link${activeSection === link.href.slice(2) ? ' nav-active' : ''}`}
+                  aria-current={activeSection === link.href.slice(2) ? 'true' : undefined}
+                  onClick={(e) => { e.preventDefault(); handleNavClick(link.href); }}
+                >
+                  {link.label}
+                </a>
+              ) : (
+                <Link
+                  to={link.href}
+                  className={`nav-link${!activeSection && activeHref === link.href ? ' nav-active' : ''}`}
+                  aria-current={!activeSection && activeHref === link.href ? 'page' : undefined}
+                  onClick={() => { setActiveSection(null); closeMenu(); }}
+                >
+                  {link.label}
+                </Link>
+              )}
             </li>
           ))}
         </ul>

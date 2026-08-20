@@ -1,0 +1,1 @@
+import{t as e}from"./Catalog-IDBZhmc-.js";import{I as t}from"./index-C6qVoqJH.js";var n=t();function r(){return(0,n.jsx)(e,{})}export{r as default};

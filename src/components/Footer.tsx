@@ -1,5 +1,32 @@
+import { Link, useNavigate } from 'react-router-dom';
 import { Mail, MessageCircle } from 'lucide-react';
 import { CONTACT, INSTAGRAM_URL, NAV_LINKS, wa, WA_MESSAGE_DEFAULT } from '../data';
+
+function scrollToSection(id: string) {
+  setTimeout(() => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  }, 200);
+}
+
+function SectionLink({ href, children }: { href: string; children: React.ReactNode }) {
+  const navigate = useNavigate();
+  const id = href.slice(2);
+  return (
+    <Link
+      to="/"
+      onClick={() => {
+        if (document.getElementById(id)) {
+          scrollToSection(id);
+        } else {
+          navigate('/');
+          scrollToSection(id);
+        }
+      }}
+    >
+      {children}
+    </Link>
+  );
+}
 
 function InstagramIcon() {
   return (
@@ -37,17 +64,17 @@ function TiktokIcon() {
 }
 
 const INSTITUTIONAL_LINKS = [
-  { label: 'Quem somos', href: '#topo' },
-  { label: 'Política de Privacidade', href: '#privacidade' },
-  { label: 'Certificados', href: '#certificado' },
-  { label: 'FAQ', href: '#duvidas' },
+  { label: 'Quem somos', href: '/' },
+  { label: 'Política de Privacidade', href: '/privacidade' },
+  { label: 'Certificados', href: '/#certificado' },
+  { label: 'FAQ', href: '/#duvidas' },
 ];
 
 const SUPPORT_LINKS = [
   { label: 'Central de Ajuda', href: null },
   { label: 'Fale Conosco', href: wa(WA_MESSAGE_DEFAULT) },
   { label: 'Suporte Técnico', href: wa(WA_MESSAGE_DEFAULT) },
-  { label: 'Como Funciona', href: '#como-funciona' },
+  { label: 'Como Funciona', href: '/#como-funciona' },
 ];
 
 export default function Footer() {
@@ -91,8 +118,12 @@ export default function Footer() {
             <h3>Navegação</h3>
             <ul>
               {NAV_LINKS.map((link) => (
-                <li key={link.href}>
-                  <a href={link.href}>{link.label}</a>
+                <li key={link.label}>
+                  {link.href.startsWith('/#') ? (
+                    <SectionLink href={link.href}>{link.label}</SectionLink>
+                  ) : (
+                    <Link to={link.href}>{link.label}</Link>
+                  )}
                 </li>
               ))}
             </ul>
@@ -104,7 +135,11 @@ export default function Footer() {
               {INSTITUTIONAL_LINKS.map((link) => (
                 <li key={link.label}>
                   {link.href ? (
-                    <a href={link.href}>{link.label}</a>
+                    link.href.startsWith('/#') ? (
+                      <SectionLink href={link.href}>{link.label}</SectionLink>
+                    ) : (
+                      <Link to={link.href}>{link.label}</Link>
+                    )
                   ) : (
                     <span className="footer-disabled" aria-disabled="true">
                       {link.label}
@@ -121,7 +156,11 @@ export default function Footer() {
               {SUPPORT_LINKS.map((link) => (
                 <li key={link.label}>
                   {link.href ? (
-                    <a href={link.href}>{link.label}</a>
+                    link.href.startsWith('/#') ? (
+                      <SectionLink href={link.href}>{link.label}</SectionLink>
+                    ) : (
+                      <Link to={link.href}>{link.label}</Link>
+                    )
                   ) : (
                     <span className="footer-disabled" aria-disabled="true">
                       {link.label}

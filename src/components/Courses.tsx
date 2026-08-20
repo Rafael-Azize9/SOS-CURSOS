@@ -1,6 +1,7 @@
 import { useMemo, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { ArrowRight, ArrowUpRight, Clock } from 'lucide-react';
-import { brl, enrollLink, wa, WA_MESSAGE_OFFERS } from '../data';
+import { brl, enrollLink, formatCourseSlug, wa, WA_MESSAGE_OFFERS } from '../data';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { useSiteData } from '../lib/siteData';
 import CourseIcon from './CourseIcon';
@@ -59,30 +60,39 @@ export default function Courses() {
         <div className="featured-track" data-reveal>
           {featured.map((course) => {
             const promo = promoByCourse.get(course.name);
+            const slug = formatCourseSlug(course.name);
             return (
               <article className="featured-card" key={course.name}>
                 <span className="featured-card-icon" aria-hidden="true">
                   <CourseIcon course={course} />
                 </span>
-                <h3>{course.name}</h3>
+                <Link to={`/curso/${slug}`} className="course-card-title-link">
+                  <h3 className="featured-card-title">{course.name}</h3>
+                </Link>
                 <p className="featured-card-desc">{FEATURED_DESCRIPTIONS[course.name]}</p>
                 <div className="featured-card-hours">
                   <Clock strokeWidth={2.2} /> {course.hours}h de curso
                 </div>
-                <div className="featured-card-foot">
+                <div className="course-card-divider" aria-hidden="true" />
+                <div className="featured-card-footer">
                   <div className="featured-card-price">
                     {promo && <del>{brl(promo.from)}</del>}
                     <strong>{brl(course.price)}</strong>
                   </div>
-                  <a
-                    className="featured-card-link"
-                    href={enrollLink(course.name)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`Matricular-se em ${course.name}`}
-                  >
-                    <ArrowUpRight strokeWidth={2.4} />
-                  </a>
+                  <div className="featured-card-actions">
+                    <Link to={`/curso/${slug}`} className="btn-details">
+                      Ver detalhes
+                    </Link>
+                    <a
+                      className="btn-enroll"
+                      href={enrollLink(course.name)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Matricular-se em ${course.name}`}
+                    >
+                      <ArrowUpRight strokeWidth={2.4} /> Matricular-se
+                    </a>
+                  </div>
                 </div>
               </article>
             );

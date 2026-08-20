@@ -1,61 +1,25 @@
-import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
-import {
-  ArrowLeft,
-  Database,
-  DatabaseBackup,
-  Download,
-  GraduationCap,
-  KeyRound,
-  LogOut,
-  Plus,
-  RefreshCcw,
-  Save,
-  Search,
-  ShieldAlert,
-  Sparkles,
-  Tag,
-  Target,
-  Timer,
-  Trash2,
-  Upload,
-} from 'lucide-react';
-import { brl, COURSES, PROMOS, type Course, type Promo } from '../data';
-import { supabase } from '../lib/supabase';
+import { useEffect, useState, type FormEvent } from 'react';
+import { ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ADMIN_USERNAME, ADMIN_EMAIL, isAdminEmail, MAX_LOGIN_ATTEMPTS, LOCK_SECONDS } from '../data';
+import { supabase, type Session } from '../lib/supabase';
 import { useSiteData } from '../lib/siteData';
-
-const PROMO_ICON_OPTIONS = [
-  'promo-icon-excel.webp',
-  'promo-icon-celular.webp',
-  'promo-icon-megafone.webp',
-  'promo-icon-codigo.webp',
-  'promo-icon-chat.webp',
-];
-
-const ADMIN_USERNAME = 'admin.azize';
-const ADMIN_EMAIL = 'admin.azize@soscursos.com';
-const MAX_LOGIN_ATTEMPTS = 5;
-const LOCK_SECONDS = 60;
+import AdminHeader from './admin/AdminHeader';
+import StatsRow from './admin/StatsRow';
+import CatalogHealth from './admin/CatalogHealth';
+import BackupManager from './admin/BackupManager';
+import CoursesTable from './admin/CoursesTable';
+import PromosTable from './admin/PromosTable';
+import PasswordForm from './admin/PasswordForm';
 
 interface AdminSession {
   email: string | null;
 }
 
-interface PromoDraft {
-  id: string | null;
-  name: string;
-  hours: number;
-  from: number;
-  price: number;
-  icon: string;
-}
-
-function isAdminEmail(email: string | null): boolean {
-  return email?.toLowerCase() === ADMIN_EMAIL;
-}
-
 export default function AdminPanel() {
   const { reload } = useSiteData();
-  const [session, setSession] = useState<AdminSession | null>(null);
+  const navigate = useNavigate();
+  const [sessionState, setSessionState] = useState<AdminSession | null>(null);
   const [checking, setChecking] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -63,9 +27,6 @@ export default function AdminPanel() {
   const [failCount, setFailCount] = useState(0);
   const [lockUntil, setLockUntil] = useState(0);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
-  const [newPassword, setNewPassword] = useState('');
-  const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
-  const [passwordMsg, setPasswordMsg] = useState('');
 
   useEffect(() => {
     document.documentElement.classList.remove('is-loading');
@@ -74,29 +35,29 @@ export default function AdminPanel() {
       return;
     }
     const client = supabase;
-    client.auth.getSession().then(({ data }) => {
-      const sessionEmail = data.session?.user.email ?? null;
+    client.auth.getSession().then(({ data: sessionData }) => {
+      const sessionEmail = sessionData.session?.user?.email ?? null;
       if (!isAdminEmail(sessionEmail)) {
         client.auth.signOut();
-        setSession(null);
+        setSessionState(null);
       } else {
-        setSession({ email: sessionEmail });
+        setSessionState({ email: sessionEmail });
       }
       setChecking(false);
     });
-    const { data: subscription } = client.auth.onAuthStateChange((_event, currentSession) => {
+    const { data: subscription } = client.auth.onAuthStateChange((_event: string, currentSession: Session | null) => {
       if (!currentSession) {
-        setSession(null);
+        setSessionState(null);
         return;
       }
-      const sessionEmail = currentSession.user.email ?? null;
+      const sessionEmail = currentSession.user?.email ?? null;
       if (!isAdminEmail(sessionEmail)) {
         client.auth.signOut();
-        setSession(null);
+        setSessionState(null);
         setAuthError('Acesso restrito ao administrador.');
         return;
       }
-      setSession({ email: sessionEmail });
+      setSessionState({ email: sessionEmail });
     });
     return () => subscription.subscription.unsubscribe();
   }, []);
@@ -132,30 +93,12 @@ export default function AdminPanel() {
   const handleSignOut = async () => {
     if (!supabase) return;
     await supabase.auth.signOut();
-    setSession(null);
+    setSessionState(null);
+    navigate('/');
   };
 
-  const handlePasswordChange = async (event: FormEvent) => {
-    event.preventDefault();
-    setPasswordMsg('');
-    if (!supabase) return;
-    if (newPassword.length < 8) {
-      setPasswordMsg('A nova senha deve ter pelo menos 8 caracteres.');
-      return;
-    }
-    if (newPassword !== newPasswordConfirm) {
-      setPasswordMsg('As senhas não conferem.');
-      return;
-    }
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
-    if (error) {
-      setPasswordMsg(`Não foi possível alterar: ${error.message}`);
-      return;
-    }
-    setPasswordMsg('Senha alterada com sucesso!');
-    setNewPassword('');
-    setNewPasswordConfirm('');
-    setShowPasswordForm(false);
+  const handleTogglePasswordForm = () => {
+    setShowPasswordForm((current) => !current);
   };
 
   if (checking) {
@@ -177,15 +120,15 @@ export default function AdminPanel() {
             <code>.env</code> e rode o script <code>supabase-setup.sql</code> no SQL Editor do Supabase. Veja o
             README do projeto para o passo a passo.
           </p>
-          <a className="btn btn-primary" href="#topo">
+          <button className="btn btn-primary" onClick={() => navigate('/')}>
             <ArrowLeft strokeWidth={2.4} /> Voltar ao site
-          </a>
+          </button>
         </div>
       </div>
     );
   }
 
-  if (!session) {
+  if (!sessionState) {
     return (
       <div className="admin-shell">
         <div className="admin-card">
@@ -221,9 +164,9 @@ export default function AdminPanel() {
               Entrar
             </button>
           </form>
-          <a className="admin-link" href="#topo">
+          <button className="admin-link" onClick={() => navigate('/')}>
             ← Voltar ao site
-          </a>
+          </button>
         </div>
       </div>
     );
@@ -231,699 +174,19 @@ export default function AdminPanel() {
 
   return (
     <div className="admin-shell">
-      <header className="admin-header">
-        <div className="container admin-header-row">
-          <div className="admin-title">
-            <Database strokeWidth={2.2} />
-            <div>
-              <p className="eyebrow">Banco de dados</p>
-              <h2>Painel de administração</h2>
-            </div>
-          </div>
-          <div className="admin-header-actions">
-            <span className="admin-session">Conectado: {ADMIN_USERNAME}</span>
-            <button
-              type="button"
-              className="btn btn-outline"
-              onClick={() => {
-                setShowPasswordForm((current) => !current);
-                setPasswordMsg('');
-              }}
-            >
-              <KeyRound strokeWidth={2.4} /> Trocar senha
-            </button>
-            <a className="btn btn-outline" href="#topo">
-              <ArrowLeft strokeWidth={2.4} /> Ver site
-            </a>
-            <button type="button" className="btn btn-secondary" onClick={handleSignOut}>
-              <LogOut strokeWidth={2.4} /> Sair
-            </button>
-          </div>
-        </div>
-      </header>
-
+      <AdminHeader
+        onTogglePasswordForm={handleTogglePasswordForm}
+        showPasswordForm={showPasswordForm}
+        onSignOut={handleSignOut}
+      />
+      <PasswordForm showPasswordForm={showPasswordForm} onClose={() => setShowPasswordForm(false)} />
       <main className="container admin-main">
-        {showPasswordForm && (
-          <section className="admin-section admin-section-compact">
-            <div className="admin-section-head">
-              <div>
-                <p className="eyebrow">Segurança</p>
-                <h3>Alterar senha do administrador</h3>
-              </div>
-            </div>
-            <form className="admin-form admin-form-inline" onSubmit={handlePasswordChange}>
-              <label>
-                Nova senha (mínimo 8 caracteres)
-                <input
-                  type="password"
-                  required
-                  minLength={8}
-                  autoComplete="new-password"
-                  value={newPassword}
-                  onChange={(event) => setNewPassword(event.target.value)}
-                  placeholder="••••••••"
-                />
-              </label>
-              <label>
-                Repetir nova senha
-                <input
-                  type="password"
-                  required
-                  minLength={8}
-                  autoComplete="new-password"
-                  value={newPasswordConfirm}
-                  onChange={(event) => setNewPasswordConfirm(event.target.value)}
-                  placeholder="••••••••"
-                />
-              </label>
-              {passwordMsg && <p className="admin-status">{passwordMsg}</p>}
-              <button type="submit" className="btn btn-primary">
-                Salvar nova senha
-              </button>
-            </form>
-          </section>
-        )}
-
         <StatsRow />
-
         <CatalogHealth />
         <BackupManager onRestored={reload} />
-
-        <CoursesEditor onSaved={reload} />
-        <PromosEditor onSaved={reload} />
+        <CoursesTable onSaved={reload} />
+        <PromosTable onSaved={reload} />
       </main>
     </div>
   );
-}
-
-function StatsRow() {
-  const { courses, promos } = useSiteData();
-  const adults = courses.filter((course) => !course.kids);
-  const kids = courses.length - adults.length;
-  const average = adults.length ? adults.reduce((sum, course) => sum + course.price, 0) / adults.length : 0;
-
-  return (
-    <div className="admin-stats">
-      <div className="admin-stat">
-        <GraduationCap strokeWidth={2.2} />
-        <strong>{courses.length}</strong>
-        <span>Cursos no catálogo</span>
-      </div>
-      <div className="admin-stat">
-        <Tag strokeWidth={2.2} />
-        <strong>{promos.length}</strong>
-        <span>Promoções ativas</span>
-      </div>
-      <div className="admin-stat">
-        <Target strokeWidth={2.2} />
-        <strong>{brl(average)}</strong>
-        <span>Preço médio</span>
-      </div>
-      <div className="admin-stat">
-        <Sparkles strokeWidth={2.2} />
-        <strong>{kids}</strong>
-        <span>Cursos Kids</span>
-      </div>
-    </div>
-  );
-}
-
-function CatalogHealth() {
-  const { courses, promos } = useSiteData();
-  const missing = Math.max(0, COURSES.length - courses.length);
-  const promosEmpty = promos.length === 0 && PROMOS.length > 0;
-  const looksWiped = missing > COURSES.length / 2 || promosEmpty;
-
-  if (!looksWiped) return null;
-
-  return (
-    <div className="admin-banner" role="alert">
-      <ShieldAlert strokeWidth={2.2} />
-      <div>
-        <strong>Catálogo incompleto no banco de dados</strong>
-        <p>
-          Há {courses.length} de {COURSES.length} cursos esperados ({missing} ausentes
-          {promosEmpty ? ' e nenhuma promoção cadastrada' : ''}). Se os dados foram perdidos, use a seção{' '}
-          <strong>Backup & Recuperação</strong> abaixo para restaurar com um clique.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-interface BackupPayload {
-  app?: string;
-  exportedAt?: string;
-  courses?: unknown[];
-  promos?: unknown[];
-}
-
-function BackupManager({ onRestored }: { onRestored: () => void }) {
-  const { courses, promos } = useSiteData();
-  const [busy, setBusy] = useState(false);
-  const [status, setStatus] = useState('');
-  const fileRef = useRef<HTMLInputElement | null>(null);
-
-  const exportBackup = () => {
-    const payload: BackupPayload = {
-      app: 'sos-escola',
-      exportedAt: new Date().toISOString(),
-      courses,
-      promos,
-    };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `sos-escola-backup-${new Date().toISOString().slice(0, 10)}.json`;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
-    setStatus(`Backup salvo com ${courses.length} cursos e ${promos.length} promoções. Guarde o arquivo em lugar seguro.`);
-  };
-
-  const restoreDefault = async () => {
-    if (!supabase) return;
-    if (
-      !window.confirm(
-        'Restaurar o catálogo padrão do site?\n\nCursos e promoções ausentes serão adicionados e os existentes serão atualizados para os valores padrão. Nada é apagado.'
-      )
-    )
-      return;
-    setBusy(true);
-    setStatus('');
-    const [coursesResult, promosResult] = await Promise.all([
-      supabase.from('courses').upsert(
-        COURSES.map((course) => ({
-          name: course.name,
-          category: course.category,
-          hours: course.hours,
-          price: course.price,
-          kids: Boolean(course.kids),
-        })),
-        { onConflict: 'name' }
-      ),
-      supabase.from('promos').upsert(
-        PROMOS.map((promo) => ({
-          name: promo.name,
-          hours: promo.hours,
-          from_price: promo.from,
-          price: promo.price,
-          icon: promo.icon,
-        })),
-        { onConflict: 'name' }
-      ),
-    ]);
-    setBusy(false);
-    if (coursesResult.error || promosResult.error) {
-      setStatus(
-        `Erro ao restaurar: ${coursesResult.error?.message ?? promosResult.error?.message ?? 'desconhecido'}`
-      );
-      return;
-    }
-    setStatus(`Catálogo padrão restaurado: ${COURSES.length} cursos e ${PROMOS.length} promoções.`);
-    await onRestored();
-  };
-
-  const restoreFromFile = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    event.target.value = '';
-    if (!file || !supabase) return;
-    setBusy(true);
-    setStatus('');
-    try {
-      const parsed = JSON.parse(await file.text()) as BackupPayload;
-      const rowsCourses = Array.isArray(parsed.courses) ? parsed.courses : [];
-      const rowsPromos = Array.isArray(parsed.promos) ? parsed.promos : [];
-      if (!rowsCourses.length && !rowsPromos.length) {
-        throw new Error('arquivo sem cursos/promoções válidos');
-      }
-      if (rowsCourses.length) {
-        const { error } = await supabase.from('courses').upsert(
-          rowsCourses.map((row) => {
-            const value = row as Record<string, unknown>;
-            return {
-              name: String(value.name ?? '').trim(),
-              category: String(value.category ?? 'Informática & Tecnologia'),
-              hours: Number(value.hours) || 0,
-              price: Number(value.price) || 0,
-              kids: Boolean(value.kids),
-            };
-          }),
-          { onConflict: 'name' }
-        );
-        if (error) throw new Error(`cursos: ${error.message}`);
-      }
-      if (rowsPromos.length) {
-        const { error } = await supabase.from('promos').upsert(
-          rowsPromos.map((row) => {
-            const value = row as Record<string, unknown>;
-            return {
-              name: String(value.name ?? '').trim(),
-              hours: Number(value.hours) || 0,
-              from_price: Number(value.from ?? value.from_price) || 0,
-              price: Number(value.price) || 0,
-              icon: String(value.icon ?? ''),
-            };
-          }),
-          { onConflict: 'name' }
-        );
-        if (error) throw new Error(`promoções: ${error.message}`);
-      }
-      setStatus(`Backup restaurado: ${rowsCourses.length} cursos e ${rowsPromos.length} promoções.`);
-      await onRestored();
-    } catch (error) {
-      setStatus(
-        `Falha ao restaurar: ${error instanceof Error ? error.message : 'arquivo inválido'}`
-      );
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <section className="admin-section">
-      <div className="admin-section-head">
-        <div>
-          <p className="eyebrow">Segurança</p>
-          <h3>Backup & Recuperação</h3>
-        </div>
-        <div className="admin-section-actions">
-          <button type="button" className="btn btn-outline" onClick={exportBackup}>
-            <Download strokeWidth={2.4} /> Baixar backup JSON
-          </button>
-          <button type="button" className="btn btn-outline" onClick={() => fileRef.current?.click()} disabled={busy}>
-            <Upload strokeWidth={2.4} /> Restaurar backup
-          </button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="application/json,.json"
-            className="admin-file-input"
-            onChange={restoreFromFile}
-            aria-label="Arquivo de backup JSON"
-          />
-          <button type="button" className="btn btn-primary" onClick={restoreDefault} disabled={busy}>
-            <RefreshCcw strokeWidth={2.4} /> Restaurar catálogo padrão
-          </button>
-        </div>
-      </div>
-
-      {status && <p className="admin-status" aria-live="polite">{status}</p>}
-
-      <p className="admin-hint">
-        <DatabaseBackup strokeWidth={2} /> Baixe um backup antes de grandes mudanças e guarde o arquivo. Para
-        restaurar, escolha o arquivo de backup ou use o botão que recria o catálogo padrão do site (nada é apagado).
-      </p>
-    </section>
-  );
-}
-
-function CoursesEditor({ onSaved }: { onSaved: () => void }) {
-  const { courses, configured } = useSiteData();
-  const [prices, setPrices] = useState<Record<string, number>>(() => priceMap(courses));
-  const [query, setQuery] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [status, setStatus] = useState('');
-
-  useEffect(() => {
-    setPrices(priceMap(courses));
-  }, [courses]);
-
-  const savePrice = async (course: Course) => {
-    if (!supabase || !course.id) return;
-    const price = prices[course.id] ?? course.price;
-    setBusy(true);
-    setStatus('');
-    const { error } = await supabase.from('courses').update({ price }).eq('id', course.id);
-    setBusy(false);
-    if (error) {
-      setStatus(`Erro ao salvar "${course.name}": ${error.message}`);
-      return;
-    }
-    setStatus(`Preço de "${course.name}" atualizado para ${brl(price)}.`);
-    await onSaved();
-  };
-
-  const importLocal = async () => {
-    if (!supabase) return;
-    if (!window.confirm('Importar o catálogo padrão (novos cursos serão adicionados, existentes serão atualizados)?')) return;
-    setBusy(true);
-    setStatus('');
-    const { error } = await supabase.from('courses').upsert(
-      COURSES.map((course) => ({
-        name: course.name,
-        category: course.category,
-        hours: course.hours,
-        price: course.price,
-        kids: Boolean(course.kids),
-      })),
-      { onConflict: 'name' }
-    );
-    setBusy(false);
-    if (error) {
-      setStatus(`Erro ao importar: ${error.message}`);
-      return;
-    }
-    setStatus('Catálogo padrão importado.');
-    await onSaved();
-  };
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return courses.filter((course) => !q || course.name.toLowerCase().includes(q));
-  }, [courses, query]);
-
-  if (!configured) return null;
-
-  return (
-    <section className="admin-section">
-      <div className="admin-section-head">
-        <div>
-          <p className="eyebrow">Catálogo</p>
-          <h3>Cursos ({courses.length})</h3>
-        </div>
-        <div className="admin-section-actions">
-          <div className="search-box admin-search">
-            <Search strokeWidth={2.2} />
-            <input
-              type="search"
-              placeholder="Filtrar cursos..."
-              aria-label="Filtrar cursos"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-            />
-          </div>
-          <button type="button" className="btn btn-outline" onClick={importLocal} disabled={busy}>
-            <Upload strokeWidth={2.4} /> Importar catálogo padrão
-          </button>
-        </div>
-      </div>
-
-      {status && <p className="admin-status" aria-live="polite">{status}</p>}
-
-      <div className="admin-table-wrap">
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Curso</th>
-              <th>Categoria</th>
-              <th>Carga (h)</th>
-              <th>Público</th>
-              <th>Preço (R$)</th>
-              <th aria-label="Ações" />
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((course) => {
-              const key = course.id ?? course.name;
-              return (
-                <tr key={key}>
-                  <td>{course.name}</td>
-                  <td>{course.category}</td>
-                  <td>{course.hours}</td>
-                  <td>
-                    {course.kids ? (
-                      <span className="admin-kids-badge">Kids</span>
-                    ) : (
-                      <span className="admin-muted-text">Adulto</span>
-                    )}
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      min={0}
-                      step={0.1}
-                      value={prices[key] ?? course.price}
-                      onChange={(event) =>
-                        setPrices((current) => ({ ...current, [key]: Number(event.target.value) }))
-                      }
-                      aria-label={`Preço de ${course.name}`}
-                    />
-                  </td>
-                  <td>
-                    <div className="admin-row-actions">
-                      <button
-                        type="button"
-                        className="admin-icon-btn save"
-                        onClick={() => savePrice(course)}
-                        disabled={busy || (prices[key] ?? course.price) === course.price}
-                        aria-label={`Salvar preço de ${course.name}`}
-                        title="Salvar preço"
-                      >
-                        <Save strokeWidth={2.2} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  );
-}
-
-function PromosEditor({ onSaved }: { onSaved: () => void }) {
-  const { promos } = useSiteData();
-  const [drafts, setDrafts] = useState<PromoDraft[]>(() => toPromoDrafts(promos));
-  const [busy, setBusy] = useState(false);
-  const [status, setStatus] = useState('');
-
-  useEffect(() => {
-    setDrafts(toPromoDrafts(promos));
-  }, [promos]);
-
-  const updateDraft = (index: number, patch: Partial<PromoDraft>) => {
-    setDrafts((current) => current.map((draft, i) => (i === index ? { ...draft, ...patch } : draft)));
-  };
-
-  const addDraft = () => {
-    setDrafts((current) => [
-      ...current,
-      { id: null, name: '', hours: 20, from: 99.9, price: 79.9, icon: 'promo-icon-excel.webp' },
-    ]);
-  };
-
-  const removeDraft = (index: number) => {
-    setDrafts((current) => current.filter((_, i) => i !== index));
-  };
-
-  const saveDraft = async (draft: PromoDraft) => {
-    if (!supabase || !draft.name.trim()) return;
-    setBusy(true);
-    setStatus('');
-    const payload = {
-      name: draft.name.trim(),
-      hours: Number(draft.hours),
-      from_price: Number(draft.from),
-      price: Number(draft.price),
-      icon: draft.icon,
-    };
-    const { error } = draft.id
-      ? await supabase.from('promos').update(payload).eq('id', draft.id)
-      : await supabase.from('promos').insert(payload);
-    setBusy(false);
-    if (error) {
-      setStatus(`Erro ao salvar a promoção "${draft.name}": ${error.message}`);
-      return;
-    }
-    setStatus(`Promoção "${draft.name}" salva.`);
-    await onSaved();
-  };
-
-  const deleteDraft = async (draft: PromoDraft) => {
-    if (!supabase || !draft.id) {
-      removeDraft(drafts.indexOf(draft));
-      return;
-    }
-    if (!window.confirm(`Excluir a promoção "${draft.name}"?`)) return;
-    setBusy(true);
-    const { error } = await supabase.from('promos').delete().eq('id', draft.id);
-    setBusy(false);
-    if (error) {
-      setStatus(`Erro ao excluir a promoção "${draft.name}": ${error.message}`);
-      return;
-    }
-    setStatus(`Promoção "${draft.name}" excluída.`);
-    await onSaved();
-  };
-
-  const importLocal = async () => {
-    if (!supabase) return;
-    if (!window.confirm('Importar as promoções padrão?')) return;
-    setBusy(true);
-    setStatus('');
-    const { error } = await supabase.from('promos').upsert(
-      PROMOS.map((promo) => ({
-        name: promo.name,
-        hours: promo.hours,
-        from_price: promo.from,
-        price: promo.price,
-        icon: promo.icon,
-      })),
-      { onConflict: 'name' }
-    );
-    setBusy(false);
-    if (error) {
-      setStatus(`Erro ao importar: ${error.message}`);
-      return;
-    }
-    setStatus('Promoções padrão importadas.');
-    await onSaved();
-  };
-
-  return (
-    <section className="admin-section">
-      <div className="admin-section-head">
-        <div>
-          <p className="eyebrow">Ofertas</p>
-          <h3>Promoções ({promos.length})</h3>
-        </div>
-        <div className="admin-section-actions">
-          <button type="button" className="btn btn-outline" onClick={importLocal} disabled={busy}>
-            <Upload strokeWidth={2.4} /> Importar promoções padrão
-          </button>
-          <button type="button" className="btn btn-primary" onClick={addDraft}>
-            <Plus strokeWidth={2.4} /> Adicionar promoção
-          </button>
-        </div>
-      </div>
-
-      {status && <p className="admin-status" aria-live="polite">{status}</p>}
-
-      <div className="admin-table-wrap">
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Carga (h)</th>
-              <th>De (R$)</th>
-              <th>Por (R$)</th>
-              <th>Desconto</th>
-              <th>Ícone</th>
-              <th aria-label="Ações" />
-            </tr>
-          </thead>
-          <tbody>
-            {drafts.map((draft, index) => {
-              const discount =
-                draft.from > draft.price && draft.from > 0
-                  ? Math.round((1 - draft.price / draft.from) * 100)
-                  : 0;
-              return (
-                <tr key={draft.id ?? `new-${index}`}>
-                  <td>
-                    <input
-                      type="text"
-                      value={draft.name}
-                      onChange={(event) => updateDraft(index, { name: event.target.value })}
-                      aria-label="Nome da promoção"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      min={1}
-                      step={1}
-                      value={draft.hours}
-                      onChange={(event) => updateDraft(index, { hours: Number(event.target.value) })}
-                      aria-label="Carga horária"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      min={0}
-                      step={0.1}
-                      value={draft.from}
-                      onChange={(event) => updateDraft(index, { from: Number(event.target.value) })}
-                      aria-label="Preço original"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      min={0}
-                      step={0.1}
-                      value={draft.price}
-                      onChange={(event) => updateDraft(index, { price: Number(event.target.value) })}
-                      aria-label="Preço promocional"
-                    />
-                  </td>
-                  <td>
-                    {discount > 0 ? (
-                      <span className="admin-discount">-{discount}%</span>
-                    ) : (
-                      <span className="admin-discount muted">—</span>
-                    )}
-                  </td>
-                  <td>
-                    <select
-                      value={draft.icon}
-                      onChange={(event) => updateDraft(index, { icon: event.target.value })}
-                      aria-label="Ícone"
-                    >
-                      <option value="">Nenhum</option>
-                      {PROMO_ICON_OPTIONS.map((icon) => (
-                        <option key={icon} value={icon}>
-                          {icon}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td>
-                    <div className="admin-row-actions">
-                      <button
-                        type="button"
-                        className="admin-icon-btn save"
-                        onClick={() => saveDraft(draft)}
-                        disabled={busy || !draft.name.trim()}
-                        aria-label={`Salvar promoção ${draft.name || 'nova'}`}
-                        title="Salvar"
-                      >
-                        <Save strokeWidth={2.2} />
-                      </button>
-                      <button
-                        type="button"
-                        className="admin-icon-btn danger"
-                        onClick={() => deleteDraft(draft)}
-                        disabled={busy}
-                        aria-label={`Excluir promoção ${draft.name || 'nova'}`}
-                        title="Excluir"
-                      >
-                        <Trash2 strokeWidth={2.2} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      <p className="admin-hint">
-        <Tag strokeWidth={2} /> As promoções aparecem no catálogo com o selo <strong>Promo</strong> e o preço antigo
-        riscado. <Timer strokeWidth={2} /> Clique em salvar para publicar.
-      </p>
-    </section>
-  );
-}
-
-function priceMap(courses: Course[]): Record<string, number> {
-  return Object.fromEntries(courses.map((course) => [course.id ?? course.name, course.price]));
-}
-
-function toPromoDrafts(promos: Promo[]): PromoDraft[] {
-  return promos.map((promo) => ({
-    id: promo.id ?? null,
-    name: promo.name,
-    hours: promo.hours,
-    from: promo.from,
-    price: promo.price,
-    icon: promo.icon,
-  }));
 }

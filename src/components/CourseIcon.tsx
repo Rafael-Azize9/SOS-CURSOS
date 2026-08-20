@@ -160,7 +160,7 @@ const KEYWORD_ICONS: Array<[RegExp, LucideIcon]> = [
 ];
 
 interface CourseIconProps {
-  course: Course;
+  course: Pick<Course, 'name'> & { category?: string };
   kind?: 'course' | 'kids';
 }
 
@@ -182,6 +182,6 @@ export default function CourseIcon({ course, kind = 'course' }: CourseIconProps)
   }
 
   const match = KEYWORD_ICONS.find(([pattern]) => pattern.test(course.name));
-  const FallbackIcon = match?.[1] ?? CATEGORY_ICONS[course.category] ?? GraduationCap;
+  const FallbackIcon = match?.[1] ?? (course.category ? CATEGORY_ICONS[course.category] : undefined) ?? GraduationCap;
   return <FallbackIcon aria-hidden="true" strokeWidth={2} />;
 }

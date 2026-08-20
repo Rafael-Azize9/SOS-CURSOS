@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { ArrowRight, Rocket } from 'lucide-react';
 import { wa, WA_MESSAGE_START } from '../data';
 import { useScrollReveal } from '../hooks/useScrollReveal';
@@ -25,10 +26,16 @@ export default function CTA() {
             </h2>
           </div>
           <p>Comece agora mesmo e tenha acesso a todos os nossos cursos.</p>
-          <a className="btn btn-light" href={wa(WA_MESSAGE_START)} target="_blank" rel="noopener noreferrer">
-            Começar agora
-            <ArrowRight strokeWidth={2.4} />
-          </a>
+          <div className="cta-actions">
+            <Link to="/catalogo" className="btn btn-light">
+              Ver todos os cursos
+              <ArrowRight strokeWidth={2.4} />
+            </Link>
+            <a className="btn btn-outline btn-light" href={wa(WA_MESSAGE_START)} target="_blank" rel="noopener noreferrer">
+              Falar no WhatsApp
+              <ArrowRight strokeWidth={2.4} />
+            </a>
+          </div>
         </div>
       </div>
     </section>
